@@ -1,0 +1,16 @@
+digraph {
+	a
+	b
+	c [shape=doublecircle]
+	d
+	inicial [shape=none]
+	inicial -> a
+	c -> a [label=b]
+	c -> d [label=a]
+	b -> c [label=b]
+	b -> d [label=a]
+	d -> b [label=b]
+	d -> d [label=a]
+	a -> a [label=b]
+	a -> d [label=a]
+}
