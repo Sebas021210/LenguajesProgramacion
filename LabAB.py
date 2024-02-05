@@ -308,39 +308,62 @@ def min_afd(afd):
     return afd_minimizado
 
 
-def simulacion_afn(string, afn):   
-    actual = set()
-    siguiente = set()
-    actual |= seguimiento(afn.inicial)
-
-    for s in string:
-        for c in actual:
-            if c.label == s:
-                siguiente |= seguimiento(c.transicion1)
-        actual = siguiente
-        siguiente = set()
-    return (afn.accept in actual)
+def aumentar_expresion(expresion):
+    return f"{expresion}#."
 
 
-def simulacion_afd(afd, w):
-    estado_labels = label_estados(afd.estados)
-    actual = afd.inicial
+def construir_AS(exp_aumentada):
+    stack = []
+    i = 0
+    while i < len(exp_aumentada):
+        char = exp_aumentada[i]
+        if char.isalpha() or char == '#':
+            nodo = estado()
+            nodo.label = char
+            stack.append(nodo)
+        elif char in "|.*":
+            if char == '|':
+                nodo = estado()
+                nodo.label = char
+                nodo.transicion2 = stack.pop()
+                nodo.transicion1 = stack.pop()
+                stack.append(nodo)
+            elif char == '.':
+                nodo = estado()
+                nodo.label = char
+                nodo.transicion2 = stack.pop()
+                nodo.transicion1 = stack.pop()
+                stack.append(nodo)
+            elif char == '*':
+                nodo = estado()
+                nodo.label = char
+                nodo.transicion1 = stack.pop()
+                stack.append(nodo)
+        i += 1
 
-    for char in w:
-        actual = afd.transitions[(actual, char)]
-    
-    return actual in afd.accept
+    return stack.pop()
 
 
-def simulacion_afd_minimizado(afd_minimizado, w):
-    actual = afd_minimizado.inicial
+def graficar_AS(arbol):
+    dot = graphviz.Digraph(format='png')
 
-    for char in w:
-        actual = afd_minimizado.transitions.get((actual, char), None)
-        if actual is None:
-            return False
+    def agregar_nodos(nodo, parent_id=None):
+        nonlocal dot
+        if nodo is None:
+            return
 
-    return actual in afd_minimizado.accept
+        current_id = str(id(nodo))
+        label = nodo.label if nodo.label else 'ε'
+        dot.node(current_id, label=label)
+
+        if parent_id is not None:
+            dot.edge(parent_id, current_id)
+
+        agregar_nodos(nodo.transicion1, current_id)
+        agregar_nodos(nodo.transicion2, current_id)
+
+    agregar_nodos(arbol)
+    dot.render('arbol_sintactico_graph', view=True)
 
 
 def leer_expresion_y_cadena(nombre_archivo):
@@ -350,9 +373,9 @@ def leer_expresion_y_cadena(nombre_archivo):
         cadena = lineas[1].strip()
     return expresion, cadena
 
+
 nombre_archivo = 'expresiones_cadena.txt'
 expresion, cadena = leer_expresion_y_cadena(nombre_archivo)
-print('Expresión regular original:', expresion)
 
 infix = convert_optional(expresion)
 print('Expresión regular:', infix)
@@ -360,13 +383,16 @@ infix,alfabeto = convertir_expresion(infix)
 explicit = convertir_explicito(infix)
 postfix = infix_postfix(explicit)
 print('Expresión regular en notación postfix:', postfix)
+
 afn = postfix_afn(postfix)
-graficar_afn(afn)
+#graficar_afn(afn)
 afd = afn_to_afd(afn, alfabeto)
 estado_labels = label_estados(afd.estados)
-graficar_afd(afd).render('afd_graph', view=True)
+#graficar_afd(afd).render('afd_graph', view=True)
 afd_min = min_afd(afd)
-graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
-print('\nEl resultado de la simulación del afn  es:',simulacion_afn(cadena, afn))
-print('El resultado de la simulación del afd  es:',simulacion_afd(afd, cadena))
-print('El resultado de la simulación del AFD minimizado es:', simulacion_afd_minimizado(afd_min, cadena))
+#graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
+
+exp_aumentada = aumentar_expresion(postfix)
+print('Expresión regular aumentada:', exp_aumentada)
+arbol_sintactico = construir_AS(exp_aumentada)
+graficar_AS(arbol_sintactico)
