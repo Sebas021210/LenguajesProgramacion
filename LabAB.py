@@ -43,6 +43,19 @@ def convertir_expresion(expresion):
     return ''.join(lista), alfabeto
 
 
+def convertir_explicito(exp: str) -> str:
+    nueva_exp = ''
+    for i in range(len(exp) - 1):
+        if exp[i] not in ['(', '|', '.'] and exp[i + 1] not in [')', '|', '*', '.']:
+            nueva_exp += exp[i] + '.'
+        else:
+            nueva_exp += exp[i] 
+
+    nueva_exp += exp[-1] 
+
+    return nueva_exp
+
+
 def infix_postfix(infix):
     caracteres_especiales = {'*': 60, '.': 40, '|': 20}
     exp_postfix, stack = "", ""  
@@ -131,7 +144,6 @@ def postfix_afn(exp_postfix):
             accept = estado()
             afn1.accept.transicion1, afn2.accept.transicion1 = accept, accept
             afnstack.append(afn(inicial, accept))
-        
         elif c == 'E':
             accept, inicial = estado(), estado()
             inicial.transicion1 = accept
@@ -252,9 +264,8 @@ def graficar_afd(afd):
 
     return dot
 
-
-def minimize_dfa(afd):
-    alfabeto = set([symbol for _, symbol in afd.transitions.keys()])
+def min_afd(afd):
+    alfabeto = set([simbolo for _, simbolo in afd.transitions.keys()])
     P = [afd.accept, afd.estados - afd.accept]
     W = [set(y) for y in P]
 
@@ -275,26 +286,26 @@ def minimize_dfa(afd):
                         else:
                             W.append(Y - X)
 
-    minimized_states = [list(y) for y in P]
-    minimized_start_state = [s for s in minimized_states if afd.inicial in s][0]
-    minimized_accept_states = [s for s in minimized_states if set(s).intersection(afd.accept)]
-    minimized_transitions = {}
+    estados_minimizados = [list(y) for y in P]
+    estado_inicial_minimizado = [s for s in estados_minimizados if afd.inicial in s][0]
+    estados_aceptacion_minimizados = [s for s in estados_minimizados if set(s).intersection(afd.accept)]
+    transiciones_minimizadas = {}
 
-    for state in minimized_states:
+    for estado in estados_minimizados:
         for c in alfabeto:
-            transition = afd.transitions.get((state[0], c))
-            if transition:
-                for s in minimized_states:
-                    if transition in s:
-                        minimized_transitions[(str(state), c)] = str(s)
+            transicion = afd.transitions.get((estado[0], c))
+            if transicion:
+                for s in estados_minimizados:
+                    if transicion in s:
+                        transiciones_minimizadas[(str(estado), c)] = str(s)
 
-    minimized_afd = AFD()
-    minimized_afd.estados = set([str(state) for state in minimized_states])
-    minimized_afd.transitions = minimized_transitions
-    minimized_afd.inicial = str(minimized_start_state)
-    minimized_afd.accept = set([str(s) for s in minimized_accept_states])
+    afd_minimizado = AFD()
+    afd_minimizado.estados = set([str(estado) for estado in estados_minimizados])
+    afd_minimizado.transitions = transiciones_minimizadas
+    afd_minimizado.inicial = str(estado_inicial_minimizado)
+    afd_minimizado.accept = set([str(s) for s in estados_aceptacion_minimizados])
 
-    return minimized_afd
+    return afd_minimizado
 
 
 def simulacion_afn(string, afn):   
@@ -341,17 +352,21 @@ def leer_expresion_y_cadena(nombre_archivo):
 
 nombre_archivo = 'expresiones_cadena.txt'
 expresion, cadena = leer_expresion_y_cadena(nombre_archivo)
+print('Expresión regular original:', expresion)
 
 infix = convert_optional(expresion)
+print('Expresión regular:', infix)
 infix,alfabeto = convertir_expresion(infix)
-postfix = infix_postfix(infix)
+explicit = convertir_explicito(infix)
+postfix = infix_postfix(explicit)
+print('Expresión regular en notación postfix:', postfix)
 afn = postfix_afn(postfix)
 graficar_afn(afn)
 afd = afn_to_afd(afn, alfabeto)
 estado_labels = label_estados(afd.estados)
 graficar_afd(afd).render('afd_graph', view=True)
-afd_min = minimize_dfa(afd)
+afd_min = min_afd(afd)
 graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
-print('el resultado de la simulación del afn  es:',simulacion_afn(cadena, afn))
-print('el resultado de la simulación del afd  es:',simulacion_afd(afd, cadena))
+print('\nEl resultado de la simulación del afn  es:',simulacion_afn(cadena, afn))
+print('El resultado de la simulación del afd  es:',simulacion_afd(afd, cadena))
 print('El resultado de la simulación del AFD minimizado es:', simulacion_afd_minimizado(afd_min, cadena))
