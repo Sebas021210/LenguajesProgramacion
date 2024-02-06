@@ -308,11 +308,13 @@ def min_afd(afd):
     return afd_minimizado
 
 
+nodo_etiqueta = 1
+
 def aumentar_expresion(expresion):
     return f"{expresion}#."
 
-
 def construir_AS(exp_aumentada):
+    global nodo_etiqueta 
     stack = []
     i = 0
     while i < len(exp_aumentada):
@@ -320,29 +322,21 @@ def construir_AS(exp_aumentada):
         if char.isalpha() or char == '#':
             nodo = estado()
             nodo.label = char
+            nodo.etiqueta = nodo_etiqueta  
+            nodo_etiqueta += 1 
             stack.append(nodo)
         elif char in "|.*":
-            if char == '|':
-                nodo = estado()
-                nodo.label = char
+            nodo = estado()
+            nodo.label = char
+            if char == '*':
+                nodo.transicion1 = stack.pop()
+            else:
                 nodo.transicion2 = stack.pop()
                 nodo.transicion1 = stack.pop()
-                stack.append(nodo)
-            elif char == '.':
-                nodo = estado()
-                nodo.label = char
-                nodo.transicion2 = stack.pop()
-                nodo.transicion1 = stack.pop()
-                stack.append(nodo)
-            elif char == '*':
-                nodo = estado()
-                nodo.label = char
-                nodo.transicion1 = stack.pop()
-                stack.append(nodo)
+            stack.append(nodo)
         i += 1
 
     return stack.pop()
-
 
 def graficar_AS(arbol):
     dot = graphviz.Digraph(format='png')
@@ -353,7 +347,11 @@ def graficar_AS(arbol):
             return
 
         current_id = str(id(nodo))
-        label = nodo.label if nodo.label else 'ε'
+        if hasattr(nodo, 'etiqueta'):
+            label = f"{nodo.label} ({nodo.etiqueta})" if nodo.label else 'ε'
+        else:
+            label = nodo.label if nodo.label else 'ε'
+        
         dot.node(current_id, label=label)
 
         if parent_id is not None:
@@ -380,8 +378,8 @@ expresion, cadena = leer_expresion_y_cadena(nombre_archivo)
 infix = convert_optional(expresion)
 print('Expresión regular:', infix)
 infix,alfabeto = convertir_expresion(infix)
-explicit = convertir_explicito(infix)
-postfix = infix_postfix(explicit)
+exp_explicita = convertir_explicito(infix)
+postfix = infix_postfix(exp_explicita)
 print('Expresión regular en notación postfix:', postfix)
 
 afn = postfix_afn(postfix)
