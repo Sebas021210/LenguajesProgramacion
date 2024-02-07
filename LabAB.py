@@ -183,15 +183,21 @@ def graficar_afn(afn):
     dot.render('afn_graph', view=True)
 
 
-def seguimiento(estado):
+def seguimiento(estado, visitados=None):
+    if visitados is None:
+        visitados = set()
+
     estados = set()
     estados.add(estado)
 
     if estado.label is None:
-        if estado.transicion1 is not None:
-            estados |= seguimiento(estado.transicion1)
-        if estado.transicion2 is not None:
-            estados |= seguimiento(estado.transicion2)
+        if estado.transicion1 is not None and estado.transicion1 not in visitados:
+            visitados.add(estado.transicion1)
+            estados |= seguimiento(estado.transicion1, visitados)
+        if estado.transicion2 is not None and estado.transicion2 not in visitados:
+            visitados.add(estado.transicion2)
+            estados |= seguimiento(estado.transicion2, visitados)
+
     return estados
 
 
@@ -375,7 +381,7 @@ def construir_AS(exp_aumentada):
                 nodo.transicion2 = c2
                 nodo.transicion1 = c1
             stack.append(nodo)
-        elif char == 'ε':
+        elif char == 'E':
             nodo = estado()
             nodo.label = char
             nodo.anulable = True
