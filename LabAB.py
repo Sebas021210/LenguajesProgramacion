@@ -323,16 +323,45 @@ def construir_AS(exp_aumentada):
             nodo = estado()
             nodo.label = char
             nodo.etiqueta = nodo_etiqueta  
+            nodo.anulable = False
+            nodo.primera_pos = {nodo_etiqueta}
+            nodo.ultima_pos = {nodo_etiqueta}
             nodo_etiqueta += 1 
             stack.append(nodo)
         elif char in "|.*":
             nodo = estado()
             nodo.label = char
             if char == '*':
-                nodo.transicion1 = stack.pop()
+                c1 = stack.pop()
+                nodo.transicion1 = c1
+                nodo.anulable = True 
+                nodo.primera_pos = c1.primera_pos
+                nodo.ultima_pos = c1.ultima_pos
             else:
-                nodo.transicion2 = stack.pop()
-                nodo.transicion1 = stack.pop()
+                c2 = stack.pop()
+                c1 = stack.pop()
+                if char == '|':
+                    nodo.anulable = c1.anulable or c2.anulable
+                    nodo.primera_pos = c1.primera_pos.union(c2.primera_pos)
+                    nodo.ultima_pos = c1.ultima_pos.union(c2.ultima_pos)
+                else: 
+                    nodo.anulable = c1.anulable and c2.anulable 
+                    if c1.anulable:
+                        nodo.primera_pos = c1.primera_pos.union(c2.primera_pos)
+                    else:
+                        nodo.primera_pos = c1.primera_pos
+                    if c2.anulable:
+                        nodo.ultima_pos = c1.ultima_pos.union(c2.ultima_pos)
+                    else:
+                        nodo.ultima_pos = c2.ultima_pos
+                nodo.transicion2 = c2
+                nodo.transicion1 = c1
+            stack.append(nodo)
+        elif char == 'ε':
+            nodo = estado()
+            nodo.label = char
+            nodo.anulable = True
+            nodo.primera_pos = set()
             stack.append(nodo)
         i += 1
 
@@ -348,9 +377,9 @@ def graficar_AS(arbol):
 
         current_id = str(id(nodo))
         if hasattr(nodo, 'etiqueta'):
-            label = f"{nodo.label} ({nodo.etiqueta})" if nodo.label else 'ε'
+            label = f"{nodo.label} ({nodo.etiqueta}) \nAnulable: {nodo.anulable} \nPrimeraPos: {nodo.primera_pos} \nUltimaPos: {nodo.ultima_pos}" if nodo.label else 'ε'
         else:
-            label = nodo.label if nodo.label else 'ε'
+            label = f"{nodo.label} \nAnulable: {nodo.anulable} \nPrimeraPos: {nodo.primera_pos} \nUltimaPos: {nodo.ultima_pos}" if nodo.label else 'ε'
         
         dot.node(current_id, label=label)
 
