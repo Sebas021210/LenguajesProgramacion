@@ -1,61 +1,73 @@
 digraph {
-	2214059553312 [label=". 
+	1198454816144 [label=". 
 Anulable: False 
 PrimeraPos: {1, 2, 3} 
-UltimaPos: {6}"]
-	2214059553216 [label=". 
+UltimaPos: {6} 
+SiguientePos: set()"]
+	1198454816048 [label=". 
 Anulable: False 
 PrimeraPos: {1, 2, 3} 
-UltimaPos: {5}"]
-	2214059553312 -> 2214059553216
-	2214059553120 [label=". 
+UltimaPos: {5} 
+SiguientePos: set()"]
+	1198454816144 -> 1198454816048
+	1198454815952 [label=". 
 Anulable: False 
 PrimeraPos: {1, 2, 3} 
-UltimaPos: {4}"]
-	2214059553216 -> 2214059553120
-	2214059553024 [label=". 
+UltimaPos: {4} 
+SiguientePos: set()"]
+	1198454816048 -> 1198454815952
+	1198454815856 [label=". 
 Anulable: False 
 PrimeraPos: {1, 2, 3} 
-UltimaPos: {3}"]
-	2214059553120 -> 2214059553024
-	2214059552928 [label="* 
+UltimaPos: {3} 
+SiguientePos: set()"]
+	1198454815952 -> 1198454815856
+	1198454815760 [label="* 
 Anulable: True 
 PrimeraPos: {1, 2} 
-UltimaPos: {1, 2}"]
-	2214059553024 -> 2214059552928
-	2214059552880 [label="| 
+UltimaPos: {1, 2} 
+SiguientePos: set()"]
+	1198454815856 -> 1198454815760
+	1198454815712 [label="| 
 Anulable: False 
 PrimeraPos: {1, 2} 
-UltimaPos: {1, 2}"]
-	2214059552928 -> 2214059552880
-	2214059552496 [label="a (1) 
+UltimaPos: {1, 2} 
+SiguientePos: set()"]
+	1198454815760 -> 1198454815712
+	1198454815328 [label="a (1) 
 Anulable: False 
 PrimeraPos: {1} 
-UltimaPos: {1}"]
-	2214059552880 -> 2214059552496
-	2214059552448 [label="b (2) 
+UltimaPos: {1} 
+SiguientePos: {1, 2, 3}"]
+	1198454815712 -> 1198454815328
+	1198454815280 [label="b (2) 
 Anulable: False 
 PrimeraPos: {2} 
-UltimaPos: {2}"]
-	2214059552880 -> 2214059552448
-	2214059552976 [label="a (3) 
+UltimaPos: {2} 
+SiguientePos: {1, 2, 3}"]
+	1198454815712 -> 1198454815280
+	1198454815808 [label="a (3) 
 Anulable: False 
 PrimeraPos: {3} 
-UltimaPos: {3}"]
-	2214059553024 -> 2214059552976
-	2214059553072 [label="a (4) 
+UltimaPos: {3} 
+SiguientePos: {4}"]
+	1198454815856 -> 1198454815808
+	1198454815904 [label="a (4) 
 Anulable: False 
 PrimeraPos: {4} 
-UltimaPos: {4}"]
-	2214059553120 -> 2214059553072
-	2214059553168 [label="b (5) 
+UltimaPos: {4} 
+SiguientePos: {5}"]
+	1198454815952 -> 1198454815904
+	1198454816000 [label="b (5) 
 Anulable: False 
 PrimeraPos: {5} 
-UltimaPos: {5}"]
-	2214059553216 -> 2214059553168
-	2214059553264 [label="# (6) 
+UltimaPos: {5} 
+SiguientePos: {6}"]
+	1198454816048 -> 1198454816000
+	1198454816096 [label="# (6) 
 Anulable: False 
 PrimeraPos: {6} 
-UltimaPos: {6}"]
-	2214059553312 -> 2214059553264
+UltimaPos: {6} 
+SiguientePos: set()"]
+	1198454816144 -> 1198454816096
 }

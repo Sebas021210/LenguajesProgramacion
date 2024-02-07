@@ -308,13 +308,26 @@ def min_afd(afd):
     return afd_minimizado
 
 
+class estado:
+    def __init__(self):
+        self.label = None
+        self.transicion1 = None
+        self.transicion2 = None
+        self.etiqueta = None
+        self.anulable = None
+        self.primera_pos = None
+        self.ultima_pos = None
+        self.siguiente_pos = set()
+
 nodo_etiqueta = 1
+nodos = {}
 
 def aumentar_expresion(expresion):
     return f"{expresion}#."
 
 def construir_AS(exp_aumentada):
     global nodo_etiqueta 
+    global nodos
     stack = []
     i = 0
     while i < len(exp_aumentada):
@@ -326,6 +339,7 @@ def construir_AS(exp_aumentada):
             nodo.anulable = False
             nodo.primera_pos = {nodo_etiqueta}
             nodo.ultima_pos = {nodo_etiqueta}
+            nodos[nodo_etiqueta] = nodo
             nodo_etiqueta += 1 
             stack.append(nodo)
         elif char in "|.*":
@@ -337,6 +351,8 @@ def construir_AS(exp_aumentada):
                 nodo.anulable = True 
                 nodo.primera_pos = c1.primera_pos
                 nodo.ultima_pos = c1.ultima_pos
+                for pos in c1.ultima_pos:
+                    nodos[pos].siguiente_pos.update(c1.primera_pos)
             else:
                 c2 = stack.pop()
                 c1 = stack.pop()
@@ -354,6 +370,8 @@ def construir_AS(exp_aumentada):
                         nodo.ultima_pos = c1.ultima_pos.union(c2.ultima_pos)
                     else:
                         nodo.ultima_pos = c2.ultima_pos
+                    for pos in c1.ultima_pos:
+                        nodos[pos].siguiente_pos.update(c2.primera_pos)
                 nodo.transicion2 = c2
                 nodo.transicion1 = c1
             stack.append(nodo)
@@ -376,10 +394,11 @@ def graficar_AS(arbol):
             return
 
         current_id = str(id(nodo))
-        if hasattr(nodo, 'etiqueta'):
-            label = f"{nodo.label} ({nodo.etiqueta}) \nAnulable: {nodo.anulable} \nPrimeraPos: {nodo.primera_pos} \nUltimaPos: {nodo.ultima_pos}" if nodo.label else 'ε'
+        
+        if nodo.etiqueta is not None:
+            label = f"{nodo.label} ({nodo.etiqueta}) \nAnulable: {nodo.anulable} \nPrimeraPos: {nodo.primera_pos} \nUltimaPos: {nodo.ultima_pos} \nSiguientePos: {nodo.siguiente_pos}" if nodo.label else 'ε'
         else:
-            label = f"{nodo.label} \nAnulable: {nodo.anulable} \nPrimeraPos: {nodo.primera_pos} \nUltimaPos: {nodo.ultima_pos}" if nodo.label else 'ε'
+            label = f"{nodo.label} \nAnulable: {nodo.anulable} \nPrimeraPos: {nodo.primera_pos} \nUltimaPos: {nodo.ultima_pos} \nSiguientePos: {nodo.siguiente_pos}" if nodo.label else 'ε'
         
         dot.node(current_id, label=label)
 
