@@ -478,19 +478,26 @@ postfix = infix_postfix(exp_explicita)
 print('Expresión regular en notación postfix:', postfix)
 
 afn = postfix_afn(postfix)
-graficar_afn(afn)
+#graficar_afn(afn)
 afd = afn_to_afd(afn, alfabeto)
 estado_labels = label_estados(afd.estados)
-graficar_afd(afd).render('afd_graph', view=True)
+#graficar_afd(afd).render('afd_graph', view=True)
 afd_min = min_afd(afd)
-graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
+#graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
 
 exp_aumentada = aumentar_expresion(postfix)
 print('Expresión regular aumentada:', exp_aumentada)
 arbol_sintactico = construir_AS(exp_aumentada)
-graficar_AS(arbol_sintactico)
+#graficar_AS(arbol_sintactico)
 
 estados, transiciones = construir_transiciones(arbol_sintactico, exp_aumentada)
-print('\nEstados:', estados)
-print('\nTransiciones', transiciones)
-graficar_afd_directo(estados, transiciones)
+estados_str = {str(list(k)): v for k, v in estados.items()}
+print('\nEstados:')
+for estado, nombre in estados_str.items():
+    print(f'{nombre}: {estado}')
+
+print('\nTransiciones')
+for estado, transiciones_estado in transiciones.items():
+    print(f'{estado}: {transiciones_estado}')
+
+#graficar_afd_directo(estados, transiciones)

@@ -5,15 +5,15 @@ digraph {
 	d
 	e
 	inicial [shape=none]
-	inicial -> d
-	d -> b [label=a]
-	d -> c [label=b]
-	c -> b [label=a]
+	inicial -> e
+	e -> d [label=a]
+	e -> c [label=b]
+	c -> d [label=a]
 	c -> c [label=b]
-	b -> e [label=a]
-	b -> c [label=b]
-	e -> e [label=a]
-	e -> a [label=b]
-	a -> b [label=a]
+	d -> d [label=a]
+	d -> b [label=b]
+	b -> d [label=a]
+	b -> a [label=b]
+	a -> d [label=a]
 	a -> c [label=b]
 }

@@ -5,12 +5,12 @@ digraph {
 	d [shape=doublecircle]
 	inicial [shape=none]
 	inicial -> b
-	d -> c [label=a]
 	d -> b [label=b]
-	a -> a [label=a]
-	a -> d [label=b]
+	d -> a [label=a]
+	c -> d [label=b]
 	c -> a [label=a]
-	c -> b [label=b]
-	b -> c [label=a]
+	a -> c [label=b]
+	a -> a [label=a]
 	b -> b [label=b]
+	b -> a [label=a]
 }
