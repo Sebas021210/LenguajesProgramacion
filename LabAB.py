@@ -391,6 +391,33 @@ def construir_AS(exp_aumentada):
 
     return stack.pop()
 
+
+def construir_transiciones(arbol, expresion):
+    transiciones = set(expresion) - set(['|', '*', '(', ')', '#', 'ε'])
+    estados = {frozenset(arbol.primera_pos): 's0'}
+    transiciones_estados = {'s0': {}}
+    pendientes = [arbol.primera_pos]
+    while pendientes:
+        actual = pendientes.pop()
+        estado_actual = estados[frozenset(actual)]
+        for transicion in transiciones:
+            nuevo = set()
+            for pos in actual:
+                nodo = nodos[pos]
+                if nodo.label == transicion:
+                    nuevo.update(nodo.siguiente_pos)
+            if nuevo:
+                estado_nuevo = estados.get(frozenset(nuevo))
+                if estado_nuevo is None:
+                    estado_nuevo = f's{len(estados)}'
+                    estados[frozenset(nuevo)] = estado_nuevo
+                    pendientes.append(nuevo)
+                if estado_actual not in transiciones_estados:
+                    transiciones_estados[estado_actual] = {}
+                transiciones_estados[estado_actual][transicion] = estado_nuevo
+    return estados, transiciones_estados
+
+
 def graficar_AS(arbol):
     dot = graphviz.Digraph(format='png')
 
@@ -418,6 +445,20 @@ def graficar_AS(arbol):
     dot.render('arbol_sintactico_graph', view=True)
 
 
+def graficar_afd_directo(estados, transiciones):
+    dot = graphviz.Digraph(format='png')
+
+    estado_aceptacion = max(nodos.keys()) 
+    estados_invertidos = {v: k for k, v in estados.items()}
+    for estado, transiciones_estado in transiciones.items():
+        for transicion, estado_destino in transiciones_estado.items():
+            dot.edge(estado, estado_destino, label=transicion)
+        if estado_aceptacion in estados_invertidos[estado]:
+            dot.node(estado, shape='doublecircle')
+
+    dot.render('afd_graph_directo', view=True)
+
+
 def leer_expresion_y_cadena(nombre_archivo):
     with open(nombre_archivo, 'r') as archivo:
         lineas = archivo.readlines()
@@ -437,14 +478,19 @@ postfix = infix_postfix(exp_explicita)
 print('Expresión regular en notación postfix:', postfix)
 
 afn = postfix_afn(postfix)
-#graficar_afn(afn)
+graficar_afn(afn)
 afd = afn_to_afd(afn, alfabeto)
 estado_labels = label_estados(afd.estados)
-#graficar_afd(afd).render('afd_graph', view=True)
+graficar_afd(afd).render('afd_graph', view=True)
 afd_min = min_afd(afd)
-#graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
+graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
 
 exp_aumentada = aumentar_expresion(postfix)
 print('Expresión regular aumentada:', exp_aumentada)
 arbol_sintactico = construir_AS(exp_aumentada)
 graficar_AS(arbol_sintactico)
+
+estados, transiciones = construir_transiciones(arbol_sintactico, exp_aumentada)
+print('\nEstados:', estados)
+print('\nTransiciones', transiciones)
+graficar_afd_directo(estados, transiciones)
