@@ -38,7 +38,7 @@ def convertir_expresion(expresion):
                             break
                     almacen.reverse()
                     lista[i] = ''.join(almacen) + '*'
-    if '+' in lista:
+    while '+' in lista:
         lista.remove('+')
     return ''.join(lista), alfabeto
 
@@ -338,7 +338,7 @@ def construir_AS(exp_aumentada):
     i = 0
     while i < len(exp_aumentada):
         char = exp_aumentada[i]
-        if char.isalpha() and char != 'E' or char == '#':
+        if char.isalpha() and char != 'E' or char == '#' or char.isalnum():
             nodo = estado()
             nodo.label = char
             nodo.etiqueta = nodo_etiqueta  
@@ -479,12 +479,12 @@ postfix = infix_postfix(exp_explicita)
 print('Expresión regular en notación postfix:', postfix)
 
 afn = postfix_afn(postfix)
-#graficar_afn(afn)
+graficar_afn(afn)
 afd = afn_to_afd(afn, alfabeto)
 estado_labels = label_estados(afd.estados)
-#graficar_afd(afd).render('afd_graph', view=True)
+graficar_afd(afd).render('afd_graph', view=True)
 afd_min = min_afd(afd)
-#graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
+graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
 
 exp_aumentada = aumentar_expresion(postfix)
 print('Expresión regular aumentada:', exp_aumentada)
@@ -501,4 +501,4 @@ print('\nTransiciones')
 for estado, transiciones_estado in transiciones.items():
     print(f'{estado}: {transiciones_estado}')
 
-#graficar_afd_directo(estados, transiciones)
+graficar_afd_directo(estados, transiciones)
