@@ -43,7 +43,7 @@ def convertir_expresion(expresion):
     return ''.join(lista), alfabeto
 
 
-def convertir_explicito(exp: str) -> str:
+def concatenacion(exp: str) -> str:
     nueva_exp = ''
     for i in range(len(exp) - 1):
         if exp[i] not in ['(', '|', '.'] and exp[i + 1] not in [')', '|', '*', '.']:
@@ -338,7 +338,7 @@ def construir_AS(exp_aumentada):
     i = 0
     while i < len(exp_aumentada):
         char = exp_aumentada[i]
-        if char.isalpha() or char == '#':
+        if char.isalpha() and char != 'E' or char == '#':
             nodo = estado()
             nodo.label = char
             nodo.etiqueta = nodo_etiqueta  
@@ -386,6 +386,7 @@ def construir_AS(exp_aumentada):
             nodo.label = char
             nodo.anulable = True
             nodo.primera_pos = set()
+            nodo.ultima_pos = set()
             stack.append(nodo)
         i += 1
 
@@ -473,7 +474,7 @@ expresion, cadena = leer_expresion_y_cadena(nombre_archivo)
 infix = convert_optional(expresion)
 print('Expresión regular:', infix)
 infix,alfabeto = convertir_expresion(infix)
-exp_explicita = convertir_explicito(infix)
+exp_explicita = concatenacion(infix)
 postfix = infix_postfix(exp_explicita)
 print('Expresión regular en notación postfix:', postfix)
 
@@ -488,7 +489,7 @@ afd_min = min_afd(afd)
 exp_aumentada = aumentar_expresion(postfix)
 print('Expresión regular aumentada:', exp_aumentada)
 arbol_sintactico = construir_AS(exp_aumentada)
-#graficar_AS(arbol_sintactico)
+graficar_AS(arbol_sintactico)
 
 estados, transiciones = construir_transiciones(arbol_sintactico, exp_aumentada)
 estados_str = {str(list(k)): v for k, v in estados.items()}

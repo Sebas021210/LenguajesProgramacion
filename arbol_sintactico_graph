@@ -1,73 +1,73 @@
 digraph {
-	3033845785904 [label=". 
+	1935557813024 [label=". 
 Anulable: False 
 PrimeraPos: {1, 2, 3} 
 UltimaPos: {6} 
 SiguientePos: set()"]
-	3033845785472 [label=". 
+	1935557812928 [label=". 
 Anulable: False 
 PrimeraPos: {1, 2, 3} 
 UltimaPos: {5} 
 SiguientePos: set()"]
-	3033845785904 -> 3033845785472
-	3033845785424 [label=". 
+	1935557813024 -> 1935557812928
+	1935557812832 [label=". 
 Anulable: False 
 PrimeraPos: {1, 2, 3} 
 UltimaPos: {4} 
 SiguientePos: set()"]
-	3033845785472 -> 3033845785424
-	3033845785328 [label=". 
+	1935557812928 -> 1935557812832
+	1935557812736 [label=". 
 Anulable: False 
 PrimeraPos: {1, 2, 3} 
 UltimaPos: {3} 
 SiguientePos: set()"]
-	3033845785424 -> 3033845785328
-	3033845785808 [label="* 
+	1935557812832 -> 1935557812736
+	1935557812640 [label="* 
 Anulable: True 
 PrimeraPos: {1, 2} 
 UltimaPos: {1, 2} 
 SiguientePos: set()"]
-	3033845785328 -> 3033845785808
-	3033845785952 [label="| 
+	1935557812736 -> 1935557812640
+	1935557812592 [label="| 
 Anulable: False 
 PrimeraPos: {1, 2} 
 UltimaPos: {1, 2} 
 SiguientePos: set()"]
-	3033845785808 -> 3033845785952
-	3033845785184 [label="a (1) 
+	1935557812640 -> 1935557812592
+	1935557812208 [label="a (1) 
 Anulable: False 
 PrimeraPos: {1} 
 UltimaPos: {1} 
 SiguientePos: {1, 2, 3}"]
-	3033845785952 -> 3033845785184
-	3033845785232 [label="b (2) 
+	1935557812592 -> 1935557812208
+	1935557812160 [label="b (2) 
 Anulable: False 
 PrimeraPos: {2} 
 UltimaPos: {2} 
 SiguientePos: {1, 2, 3}"]
-	3033845785952 -> 3033845785232
-	3033845784512 [label="a (3) 
+	1935557812592 -> 1935557812160
+	1935557812688 [label="a (3) 
 Anulable: False 
 PrimeraPos: {3} 
 UltimaPos: {3} 
 SiguientePos: {4}"]
-	3033845785328 -> 3033845784512
-	3033845784896 [label="b (4) 
+	1935557812736 -> 1935557812688
+	1935557812784 [label="b (4) 
 Anulable: False 
 PrimeraPos: {4} 
 UltimaPos: {4} 
 SiguientePos: {5}"]
-	3033845785424 -> 3033845784896
-	3033845785376 [label="b (5) 
+	1935557812832 -> 1935557812784
+	1935557812880 [label="b (5) 
 Anulable: False 
 PrimeraPos: {5} 
 UltimaPos: {5} 
 SiguientePos: {6}"]
-	3033845785472 -> 3033845785376
-	3033845785856 [label="# (6) 
+	1935557812928 -> 1935557812880
+	1935557812976 [label="# (6) 
 Anulable: False 
 PrimeraPos: {6} 
 UltimaPos: {6} 
 SiguientePos: set()"]
-	3033845785904 -> 3033845785856
+	1935557813024 -> 1935557812976
 }
