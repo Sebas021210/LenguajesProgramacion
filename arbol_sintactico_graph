@@ -1,103 +1,73 @@
 digraph {
-	2437546797632 [label=". 
+	1652792656368 [label=". 
 Anulable: False 
 PrimeraPos: {1, 2, 3} 
-UltimaPos: {8} 
+UltimaPos: {6} 
 SiguientePos: set()"]
-	2437546796480 [label=". 
-Anulable: False 
-PrimeraPos: {1, 2, 3} 
-UltimaPos: {5, 6, 7} 
-SiguientePos: set()"]
-	2437546797632 -> 2437546796480
-	2437546797488 [label=". 
+	1652792656272 [label=". 
 Anulable: False 
 PrimeraPos: {1, 2, 3} 
 UltimaPos: {5} 
 SiguientePos: set()"]
-	2437546796480 -> 2437546797488
-	2437546797440 [label=". 
+	1652792656368 -> 1652792656272
+	1652792656176 [label=". 
 Anulable: False 
 PrimeraPos: {1, 2, 3} 
 UltimaPos: {4} 
 SiguientePos: set()"]
-	2437546797488 -> 2437546797440
-	2437546797344 [label=". 
+	1652792656272 -> 1652792656176
+	1652792656080 [label=". 
 Anulable: False 
 PrimeraPos: {1, 2, 3} 
 UltimaPos: {3} 
 SiguientePos: set()"]
-	2437546797440 -> 2437546797344
-	2437546797824 [label="* 
+	1652792656176 -> 1652792656080
+	1652792655984 [label="* 
 Anulable: True 
 PrimeraPos: {1, 2} 
 UltimaPos: {1, 2} 
 SiguientePos: set()"]
-	2437546797344 -> 2437546797824
-	2437546797968 [label="| 
+	1652792656080 -> 1652792655984
+	1652792655936 [label="| 
 Anulable: False 
 PrimeraPos: {1, 2} 
 UltimaPos: {1, 2} 
 SiguientePos: set()"]
-	2437546797824 -> 2437546797968
-	2437546797200 [label="1 (1) 
+	1652792655984 -> 1652792655936
+	1652792344192 [label="a (1) 
 Anulable: False 
 PrimeraPos: {1} 
 UltimaPos: {1} 
 SiguientePos: {1, 2, 3}"]
-	2437546797968 -> 2437546797200
-	2437546797248 [label="0 (2) 
+	1652792655936 -> 1652792344192
+	1652792344384 [label="b (2) 
 Anulable: False 
 PrimeraPos: {2} 
 UltimaPos: {2} 
 SiguientePos: {1, 2, 3}"]
-	2437546797968 -> 2437546797248
-	2437546796528 [label="1 (3) 
+	1652792655936 -> 1652792344384
+	1652792656032 [label="a (3) 
 Anulable: False 
 PrimeraPos: {3} 
 UltimaPos: {3} 
 SiguientePos: {4}"]
-	2437546797344 -> 2437546796528
-	2437546796912 [label="0 (4) 
+	1652792656080 -> 1652792656032
+	1652792656128 [label="b (4) 
 Anulable: False 
 PrimeraPos: {4} 
 UltimaPos: {4} 
 SiguientePos: {5}"]
-	2437546797440 -> 2437546796912
-	2437546797392 [label="0 (5) 
+	1652792656176 -> 1652792656128
+	1652792656224 [label="b (5) 
 Anulable: False 
 PrimeraPos: {5} 
 UltimaPos: {5} 
-SiguientePos: {8, 6, 7}"]
-	2437546797488 -> 2437546797392
-	2437546797296 [label="* 
-Anulable: True 
-PrimeraPos: {6, 7} 
-UltimaPos: {6, 7} 
-SiguientePos: set()"]
-	2437546796480 -> 2437546797296
-	2437546797536 [label="| 
-Anulable: False 
-PrimeraPos: {6, 7} 
-UltimaPos: {6, 7} 
-SiguientePos: set()"]
-	2437546797296 -> 2437546797536
-	2437546797872 [label="1 (6) 
+SiguientePos: {6}"]
+	1652792656272 -> 1652792656224
+	1652792656320 [label="# (6) 
 Anulable: False 
 PrimeraPos: {6} 
 UltimaPos: {6} 
-SiguientePos: {8, 6, 7}"]
-	2437546797536 -> 2437546797872
-	2437546797920 [label="0 (7) 
-Anulable: False 
-PrimeraPos: {7} 
-UltimaPos: {7} 
-SiguientePos: {8, 6, 7}"]
-	2437546797536 -> 2437546797920
-	2437546797152 [label="# (8) 
-Anulable: False 
-PrimeraPos: {8} 
-UltimaPos: {8} 
 SiguientePos: set()"]
-	2437546797632 -> 2437546797152
+	1652792656368 -> 1652792656320
 }

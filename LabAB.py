@@ -87,7 +87,6 @@ class estado:
     transicion2 = None 
     id = None
 
-
 class afn:
     inicial, accept = None, None
 
@@ -208,7 +207,6 @@ class AFD:
         self.inicial = None
         self.accept = set()
 
-
 def afn_to_afd(afn, alphabet):
     afd = AFD()
     estado_inicial = frozenset(seguimiento(afn.inicial))
@@ -270,6 +268,7 @@ def graficar_afd(afd):
 
     return dot
 
+
 def min_afd(afd):
     alfabeto = set([simbolo for _, simbolo in afd.transitions.keys()])
     P = [afd.accept, afd.estados - afd.accept]
@@ -330,6 +329,7 @@ nodos = {}
 
 def aumentar_expresion(expresion):
     return f"{expresion}#."
+
 
 def construir_AS(exp_aumentada):
     global nodo_etiqueta 
@@ -460,6 +460,55 @@ def graficar_afd_directo(estados, transiciones):
     dot.render('afd_graph_directo', view=True)
 
 
+def simulacion_afn(afn, w):   
+    actual = set()
+    siguiente = set()
+    actual |= seguimiento(afn.inicial)
+
+    for s in w:
+        for c in actual:
+            if c.label == s:
+                siguiente |= seguimiento(c.transicion1)
+        actual = siguiente
+        siguiente = set()
+    return (afn.accept in actual)
+
+
+def simulacion_afd(afd, w):
+    estado_labels = label_estados(afd.estados)
+    actual = afd.inicial
+
+    for char in w:
+        actual = afd.transitions.get((actual, char), None)
+        if actual is None:
+            return False
+    
+    return actual in afd.accept
+
+
+def simulacion_afd_minimizado(afd_minimizado, w):
+    actual = afd_minimizado.inicial
+
+    for char in w:
+        actual = afd_minimizado.transitions.get((actual, char), None)
+        if actual is None:
+            return False
+
+    return actual in afd_minimizado.accept
+
+
+def simulacion_afd_directo(estados, transiciones, cadena):
+    estado_actual = 's0'
+
+    for char in cadena:
+        if estado_actual in transiciones and char in transiciones[estado_actual]:
+            estado_actual = transiciones[estado_actual][char]
+        else:
+            return False
+
+    return estado_actual in estados.values()
+
+
 def leer_expresion_y_cadena(nombre_archivo):
     with open(nombre_archivo, 'r') as archivo:
         lineas = archivo.readlines()
@@ -479,26 +528,27 @@ postfix = infix_postfix(exp_explicita)
 print('Expresión regular en notación postfix:', postfix)
 
 afn = postfix_afn(postfix)
-graficar_afn(afn)
+#graficar_afn(afn)
 afd = afn_to_afd(afn, alfabeto)
 estado_labels = label_estados(afd.estados)
-graficar_afd(afd).render('afd_graph', view=True)
+#graficar_afd(afd).render('afd_graph', view=True)
 afd_min = min_afd(afd)
-graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
+#graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
 
 exp_aumentada = aumentar_expresion(postfix)
 print('Expresión regular aumentada:', exp_aumentada)
 arbol_sintactico = construir_AS(exp_aumentada)
-graficar_AS(arbol_sintactico)
+#graficar_AS(arbol_sintactico)
 
 estados, transiciones = construir_transiciones(arbol_sintactico, exp_aumentada)
 estados_str = {str(list(k)): v for k, v in estados.items()}
 print('\nEstados:')
-for estado, nombre in estados_str.items():
-    print(f'{nombre}: {estado}')
-
+for estado, nombre in estados_str.items(): print(f'{nombre}: {estado}')
 print('\nTransiciones')
-for estado, transiciones_estado in transiciones.items():
-    print(f'{estado}: {transiciones_estado}')
-
+for estado, transiciones_estado in transiciones.items(): print(f'{estado}: {transiciones_estado}')
 graficar_afd_directo(estados, transiciones)
+
+print('\nEl resultado de la simulación del AFN es:',simulacion_afn(afn, cadena))
+print('El resultado de la simulación del AFD  es:',simulacion_afd(afd, cadena))
+print('El resultado de la simulación del AFD minimizado es:', simulacion_afd_minimizado(afd_min, cadena))
+print('El resultado de la simulación del AFD directo es:', simulacion_afd_directo(estados_str, transiciones, cadena))
