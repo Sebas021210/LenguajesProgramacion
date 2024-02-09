@@ -1,7 +1,25 @@
 import graphviz
+import re
 
 def convert_optional(regex):
     return regex.replace('?', '|E')
+
+
+def expandir_rango(rango):
+    inicio, fin = rango
+    return '|'.join([f'({chr(i)})' for i in range(ord(inicio), ord(fin) + 1)])
+
+
+def expandir_extensiones(expresion):
+    patron_extension = re.compile(r'\[([^\]]+)\]')
+    coincidencias = patron_extension.findall(expresion)
+
+    for coincidencia in coincidencias:
+        rango = coincidencia.split('-')
+        if len(rango) == 2 and len(rango[0]) == 1 and len(rango[1]) == 1:
+            expresion = expresion.replace(f'[{coincidencia}]', f'({expandir_rango(rango)})')
+    
+    return expresion
 
 
 def convertir_expresion(expresion):
@@ -522,23 +540,24 @@ expresion, cadena = leer_expresion_y_cadena(nombre_archivo)
 
 infix = convert_optional(expresion)
 print('Expresión regular:', infix)
+infix = expandir_extensiones(infix)
 infix,alfabeto = convertir_expresion(infix)
 exp_explicita = concatenacion(infix)
 postfix = infix_postfix(exp_explicita)
 print('Expresión regular en notación postfix:', postfix)
 
 afn = postfix_afn(postfix)
-#graficar_afn(afn)
+graficar_afn(afn)
 afd = afn_to_afd(afn, alfabeto)
 estado_labels = label_estados(afd.estados)
-#graficar_afd(afd).render('afd_graph', view=True)
+graficar_afd(afd).render('afd_graph', view=True)
 afd_min = min_afd(afd)
-#graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
+graficar_afd(afd_min).render('afd_minimizado_graph', view=True)
 
 exp_aumentada = aumentar_expresion(postfix)
 print('Expresión regular aumentada:', exp_aumentada)
 arbol_sintactico = construir_AS(exp_aumentada)
-#graficar_AS(arbol_sintactico)
+graficar_AS(arbol_sintactico)
 
 estados, transiciones = construir_transiciones(arbol_sintactico, exp_aumentada)
 estados_str = {str(list(k)): v for k, v in estados.items()}

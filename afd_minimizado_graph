@@ -6,11 +6,11 @@ digraph {
 	inicial [shape=none]
 	inicial -> a
 	d -> a [label=b]
-	d -> b [label=a]
-	c -> d [label=b]
-	c -> b [label=a]
-	b -> c [label=b]
-	b -> b [label=a]
+	d -> c [label=a]
+	b -> d [label=b]
+	b -> c [label=a]
+	c -> b [label=b]
+	c -> c [label=a]
 	a -> a [label=b]
-	a -> b [label=a]
+	a -> c [label=a]
 }
