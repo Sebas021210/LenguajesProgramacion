@@ -1,0 +1,73 @@
+digraph {
+	2137186346624 [label=". 
+Anulable: False 
+PrimeraPos: {1, 2, 3} 
+UltimaPos: {6} 
+SiguientePos: set()"]
+	2137186346528 [label=". 
+Anulable: False 
+PrimeraPos: {1, 2, 3} 
+UltimaPos: {5} 
+SiguientePos: set()"]
+	2137186346624 -> 2137186346528
+	2137186346672 [label=". 
+Anulable: False 
+PrimeraPos: {1, 2, 3} 
+UltimaPos: {4} 
+SiguientePos: set()"]
+	2137186346528 -> 2137186346672
+	2137186346432 [label=". 
+Anulable: False 
+PrimeraPos: {1, 2, 3} 
+UltimaPos: {3} 
+SiguientePos: set()"]
+	2137186346672 -> 2137186346432
+	2137181303472 [label="* 
+Anulable: True 
+PrimeraPos: {1, 2} 
+UltimaPos: {1, 2} 
+SiguientePos: set()"]
+	2137186346432 -> 2137181303472
+	2137181303520 [label="| 
+Anulable: False 
+PrimeraPos: {1, 2} 
+UltimaPos: {1, 2} 
+SiguientePos: set()"]
+	2137181303472 -> 2137181303520
+	2137181303376 [label="a (1) 
+Anulable: False 
+PrimeraPos: {1} 
+UltimaPos: {1} 
+SiguientePos: {1, 2, 3}"]
+	2137181303520 -> 2137181303376
+	2137181303328 [label="b (2) 
+Anulable: False 
+PrimeraPos: {2} 
+UltimaPos: {2} 
+SiguientePos: {1, 2, 3}"]
+	2137181303520 -> 2137181303328
+	2137186346384 [label="a (3) 
+Anulable: False 
+PrimeraPos: {3} 
+UltimaPos: {3} 
+SiguientePos: {4}"]
+	2137186346432 -> 2137186346384
+	2137186346336 [label="b (4) 
+Anulable: False 
+PrimeraPos: {4} 
+UltimaPos: {4} 
+SiguientePos: {5}"]
+	2137186346672 -> 2137186346336
+	2137186346480 [label="b (5) 
+Anulable: False 
+PrimeraPos: {5} 
+UltimaPos: {5} 
+SiguientePos: {6}"]
+	2137186346528 -> 2137186346480
+	2137186346576 [label="# (6) 
+Anulable: False 
+PrimeraPos: {6} 
+UltimaPos: {6} 
+SiguientePos: set()"]
+	2137186346624 -> 2137186346576
+}
