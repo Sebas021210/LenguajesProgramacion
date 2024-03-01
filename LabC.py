@@ -124,7 +124,14 @@ def construir_AS(exp_aumentada):
     i = 0
     while i < len(exp_aumentada):
         char = exp_aumentada[i]
-        if char.isalpha() and char != 'E' or char == '#' or char.isalnum():
+        if char == 'E':
+            nodo = estado()
+            nodo.label = char
+            nodo.anulable = True
+            nodo.primera_pos = set()
+            nodo.ultima_pos = set()
+            stack.append(nodo)
+        elif char.isalpha() or char == '#' or char.isalnum() and char != 'E':
             nodo = estado()
             nodo.label = char
             nodo.etiqueta = nodo_etiqueta  
@@ -166,13 +173,6 @@ def construir_AS(exp_aumentada):
                         nodos[pos].siguiente_pos.update(c2.primera_pos)
                 nodo.transicion2 = c2
                 nodo.transicion1 = c1
-            stack.append(nodo)
-        elif char == 'E':
-            nodo = estado()
-            nodo.label = char
-            nodo.anulable = True
-            nodo.primera_pos = set()
-            nodo.ultima_pos = set()
             stack.append(nodo)
         i += 1
 
