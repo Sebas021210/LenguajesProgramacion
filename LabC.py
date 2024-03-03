@@ -15,9 +15,19 @@ def expandir_extensiones(expresion):
     coincidencias = patron_extension.findall(expresion)
 
     for coincidencia in coincidencias:
-        rango = coincidencia.split('-')
-        if len(rango) == 2 and len(rango[0]) == 1 and len(rango[1]) == 1:
-            expresion = expresion.replace(f'[{coincidencia}]', f'({expandir_rango(rango)})')
+        rangos = coincidencia.split(' ')
+        expresion_rangos = []
+        for rango in rangos:
+            if '-' in rango:
+                inicio, fin = rango.split('-')
+                if len(inicio) == 1 and len(fin) == 1:
+                    expresion_rangos.append(expandir_rango((inicio, fin)))
+                elif len(inicio) == 3 and inicio[0] == "'" and inicio[2] == "'" and len(fin) == 3 and fin[0] == "'" and fin[2] == "'":
+                    expresion_rangos.append(expandir_rango((inicio[1], fin[1])))
+            else:
+                expresion_rangos.append(rango)
+        
+        expresion = expresion.replace(f'[{coincidencia}]', f'({"|".join(expresion_rangos)})')
     
     return expresion
 
