@@ -194,6 +194,7 @@ def construir_transiciones(arbol, expresion):
     estados = {frozenset(arbol.primera_pos): 's0'}
     transiciones_estados = {'s0': {}}
     pendientes = [arbol.primera_pos]
+    estado_aceptacion = max(nodos.keys())
     while pendientes:
         actual = pendientes.pop()
         estado_actual = estados[frozenset(actual)]
@@ -212,7 +213,7 @@ def construir_transiciones(arbol, expresion):
                 if estado_actual not in transiciones_estados:
                     transiciones_estados[estado_actual] = {}
                 transiciones_estados[estado_actual][transicion] = estado_nuevo
-    return estados, transiciones_estados
+    return estados, transiciones_estados, estado_aceptacion
 
 
 def graficar_AS(arbol):
@@ -290,12 +291,14 @@ print('Expresión regular en notación postfix:', postfix)
 exp_aumentada = aumentar_expresion(postfix)
 print('Expresión regular aumentada:', exp_aumentada)
 arbol_sintactico = construir_AS(exp_aumentada)
-graficar_AS(arbol_sintactico)
+#graficar_AS(arbol_sintactico)
 
-estados, transiciones = construir_transiciones(arbol_sintactico, exp_aumentada)
+estados, transiciones, estado_aceptacion = construir_transiciones(arbol_sintactico, exp_aumentada)
 estados_str = {str(list(k)): v for k, v in estados.items()}
 print('\nEstados:')
-for estado, nombre in estados_str.items(): print(f'{nombre}: {estado}')
+for estado, nombre in estados_str.items(): 
+    es_aceptacion = str(estado_aceptacion) in estado
+    print(f'{nombre}: {estado} - Aceptación: {es_aceptacion}')
 print('\nTransiciones')
 for estado, transiciones_estado in transiciones.items(): print(f'{estado}: {transiciones_estado}')
 
