@@ -1,5 +1,4 @@
 import graphviz
-import re
 
 def convert_optional(regex):
     return regex.replace('?', '|E')
@@ -9,23 +8,25 @@ def expandir_rango(rango):
     return '|'.join([f'({chr(i)})' for i in range(ord(inicio), ord(fin) + 1)])
 
 def expandir_extensiones(expresion):
-    patron_extension = re.compile(r'\[([^\]]+)\]')
-    coincidencias = patron_extension.findall(expresion)
-
-    for coincidencia in coincidencias:
+    patron_extension = '[^\]]+'
+    inicio = expresion.find('[')
+    while inicio != -1:
+        fin = expresion.find(']', inicio)
+        coincidencia = expresion[inicio+1:fin]
         rangos = coincidencia.split(' ')
         expresion_rangos = []
         for rango in rangos:
             if '-' in rango:
-                inicio, fin = rango.split('-')
-                if len(inicio) == 1 and len(fin) == 1:
-                    expresion_rangos.append(expandir_rango((inicio, fin)))
-                elif len(inicio) == 3 and inicio[0] == "'" and inicio[2] == "'" and len(fin) == 3 and fin[0] == "'" and fin[2] == "'":
-                    expresion_rangos.append(expandir_rango((inicio[1], fin[1])))
+                inicio_rango, fin_rango = rango.split('-')
+                if len(inicio_rango) == 1 and len(fin_rango) == 1:
+                    expresion_rangos.append(expandir_rango((inicio_rango, fin_rango)))
+                elif len(inicio_rango) == 3 and inicio_rango[0] == "'" and inicio_rango[2] == "'" and len(fin_rango) == 3 and fin_rango[0] == "'" and fin_rango[2] == "'":
+                    expresion_rangos.append(expandir_rango((inicio_rango[1], fin_rango[1])))
             else:
                 expresion_rangos.append(rango)
         
         expresion = expresion.replace(f'[{coincidencia}]', f'({"|".join(expresion_rangos)})')
+        inicio = expresion.find('[', fin)
     
     return expresion
 
@@ -226,7 +227,15 @@ def leer_yalex(nombre_archivo):
     return contenido
 
 def AFD_yalex(yalex_contenido):
-    expresiones = re.findall(r'let\s+(\w+)\s*=\s*(.+)', yalex_contenido)
+    lineas = yalex_contenido.split('\n')
+    expresiones = []
+    for linea in lineas:
+        if linea.startswith('let'):
+            partes = linea.split('=')
+            nombre = partes[0].strip().split(' ')[1]
+            valor = partes[1].strip()
+            expresiones.append((nombre, valor))
+
     print("Expresiones: ")
     for i in range(len(expresiones)):
         print(expresiones[i])
@@ -247,6 +256,8 @@ def AFD_yalex(yalex_contenido):
     infix, alfabeto = convertir_expresion(infix)
     exp_explicita = concatenacion(infix)
     postfix = infix_postfix(exp_explicita)
+    print("\nExpresion postfix: ")
+    print(postfix)
 
     exp_aumentada = aumentar_expresion(postfix)
     print("\nExpresion aumentada: ")

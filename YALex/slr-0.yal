@@ -2,11 +2,14 @@
 
 (* Introducir cualquier header aqui *)
 
+let delim = ['A'-'C']
+let ws = delim+
 let letter = ['A'-'D' 'a'-'d']
 let digit = ['0'-'4']
 let id = letter(letter|digit)*
 
 rule tokens = 
+    ws
   | id        { return ID }               (* Cambie por una acción válida, que devuelva el token *)
   | '+'       { return PLUS }
   | '*'       { return TIMES }
