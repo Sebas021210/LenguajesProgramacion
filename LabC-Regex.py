@@ -35,7 +35,7 @@ def expandir_extensiones(expresion):
 def convertir_expresion(expresion):
     lista = list(expresion)
     alfabeto = []
-    operandos = ['+','.','*','|','(',')','[',']','{','}','?']
+    operandos = ['+', '.', '*', '|', '(', ')', '[', ']', '{', '}','?']
 
     for i in lista:
         if i not in operandos:
@@ -44,30 +44,32 @@ def convertir_expresion(expresion):
 
     alfabeto.append('')
     
-    for i in range(len(lista)):
-        if i > 0:
-            before = lista[i - 1]
-            if lista[i] == '+':
-                if before not in ')]}':
-                    lista[i - 1] = lista[i - 1] + lista[i - 1] + '*'
-                else:
-                    almacen = []
-                    aperturas = 0
-                    for j in range(i - 1, -1, -1):
-                        if lista[j] in ')]}':
-                            aperturas += 1
-                            almacen.append(lista[j])
-                        elif lista[j] in '([{':
-                            aperturas -= 1
-                            almacen.append(lista[j])
-                        else:
-                            almacen.append(lista[j])
-                        if aperturas == 0:
-                            break
-                    almacen.reverse()
-                    lista[i] = ''.join(almacen) + '*'
-    while '+' in lista:
-        lista.remove('+')
+    i = 0
+    while i < len(lista):
+        if lista[i] == '+':
+            if i > 0 and lista[i - 1] not in ')]}':
+                lista[i - 1] = lista[i - 1] + lista[i - 1] + '*'
+                del lista[i]
+            else:
+                almacen = []
+                aperturas = 0
+                for j in range(i - 1, -1, -1):
+                    if lista[j] in ')]}':
+                        aperturas += 1
+                        almacen.append(lista[j])
+                    elif lista[j] in '([{':
+                        aperturas -= 1
+                        almacen.append(lista[j])
+                    else:
+                        almacen.append(lista[j])
+                    if aperturas == 0:
+                        break
+                almacen.reverse()
+                lista[i] = ''.join(almacen) + '*'
+                del lista[i+1]
+        else:
+            i += 1
+
     return ''.join(lista), alfabeto
 
 
@@ -284,6 +286,7 @@ infix = convert_optional(expresion)
 print('Expresión regular:', infix)
 infix = expandir_extensiones(infix)
 infix,alfabeto = convertir_expresion(infix)
+print('Expresión regular con concatenación:', infix)
 exp_explicita = concatenacion(infix)
 postfix = infix_postfix(exp_explicita)
 print('Expresión regular en notación postfix:', postfix)
