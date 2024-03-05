@@ -1,4 +1,60 @@
 import graphviz
+import tkinter as tk
+from tkinter import filedialog
+
+class TextEditor:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("YALex Text Editor")
+        self.root.geometry("700x600")
+        self.text_widget = tk.Text(root, wrap="word", undo=True, autoseparators=True)
+        self.text_widget.pack(expand=True, fill="both")
+
+        menu_bar = tk.Menu(root)
+        root.config(menu=menu_bar)
+
+        menu_bar.add_command(label="Open", command=self.open_file)
+        menu_bar.add_command(label="Save", command=self.save_file)
+        menu_bar.add_command(label="Run YALex", command=self.run_yalex)
+        menu_bar.add_command(label="Exit", command=root.destroy)
+
+    def open_file(self):
+        file_path = filedialog.askopenfilename(title="Open YALex File", filetypes=[("YALex Files", "*.yal")])
+        if file_path:
+            with open(file_path, 'r') as file:
+                content = file.read()
+            self.text_widget.delete(1.0, tk.END)
+            self.text_widget.insert(tk.END, content)
+
+    def save_file(self):
+        file_path = filedialog.asksaveasfilename(title="Save YALex File", filetypes=[("YALex Files", "*.yal")])
+        if file_path:
+            with open(file_path, 'w') as file:
+                file.write(self.text_widget.get(1.0, tk.END))
+
+    def run_yalex(self):
+        yalex_code = self.text_widget.get(1.0, tk.END)
+        try:
+            estados, transiciones, estado_aceptacion = AFD_yalex(yalex_code)
+            self.show_graph(estados, transiciones)
+        except Exception as e:
+            self.show_error(str(e))
+
+    def show_graph(self, estados, transiciones):
+        dot = graphviz.Digraph(format='png')
+
+        estado_aceptacion = max(nodos.keys())
+        estados_invertidos = {v: k for k, v in estados.items()}
+        for estado, transiciones_estado in transiciones.items():
+            for transicion, estado_destino in transiciones_estado.items():
+                dot.edge(estado, estado_destino, label=transicion)
+            if estado_aceptacion in estados_invertidos[estado]:
+                dot.node(estado, shape='doublecircle')
+
+        dot.render('afd_graph_directo', view=True)
+
+    def show_error(self, error_message):
+        tk.messagebox.showerror("Error", error_message)
 
 def convert_optional(regex):
     return regex.replace('?', '|E')
@@ -221,11 +277,6 @@ def graficar_afd_directo(estados, transiciones):
 
     dot.render('afd_graph_directo', view=True)
 
-def leer_yalex(nombre_archivo):
-    with open(nombre_archivo, 'r') as archivo:
-        contenido = archivo.read()
-    return contenido
-
 def AFD_yalex(yalex_contenido):
     lineas = yalex_contenido.split('\n')
     expresiones = []
@@ -268,7 +319,10 @@ def AFD_yalex(yalex_contenido):
 
     return estados, transiciones, estado_aceptacion
 
-nombre_archivo = './YALex/slr-0.yal'
-yalex = leer_yalex(nombre_archivo)
-estados, transiciones, estado_aceptacion = AFD_yalex(yalex)
-graficar_afd_directo(estados, transiciones)
+def main():
+    root = tk.Tk()
+    text_editor = TextEditor(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
