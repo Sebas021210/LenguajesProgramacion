@@ -78,6 +78,9 @@ def expandir_extensiones(expresion):
                     expresion_rangos.append(expandir_rango((inicio_rango, fin_rango)))
                 elif len(inicio_rango) == 3 and inicio_rango[0] == "'" and inicio_rango[2] == "'" and len(fin_rango) == 3 and fin_rango[0] == "'" and fin_rango[2] == "'":
                     expresion_rangos.append(expandir_rango((inicio_rango[1], fin_rango[1])))
+            elif rango[0] == "'" and rango[-1] == "'":
+                palabra = rango[1:-1]
+                expresion_rangos.append(f'({"|".join(palabra)})')
             else:
                 expresion_rangos.append(rango)
         
@@ -282,23 +285,33 @@ def graficar_afd_directo(estados, transiciones):
 def AFD_yalex(yalex_contenido):
     lineas = yalex_contenido.split('\n')
     expresiones = []
+
+    def process_string(input_string):
+        if input_string.startswith("'") and input_string.endswith("'"):
+            no_quotes = input_string[1:-1]
+            result = '.'.join(no_quotes)
+            return result
+        return input_string
+
     for linea in lineas:
         if linea.startswith('let'):
             partes = linea.split('=')
             nombre = partes[0].strip().split(' ')[1]
             valor = partes[1].strip()
+            valor = process_string(valor)
             expresiones.append((nombre, valor))
-
-    print("Expresiones: ")
-    for i in range(len(expresiones)):
-        print(expresiones[i])
 
     expresiones_dict = dict(expresiones)
 
     def reemplazar_referencias(exp):
         for nombre, valor in expresiones_dict.items():
-            exp = exp.replace(nombre, f'({valor})')
+            if not (exp.startswith("'") and exp.endswith("'")):
+                exp = exp.replace(nombre, f'({valor})')
         return exp
+
+    print("Expresiones: ")
+    for i in range(len(expresiones)):
+        print(expresiones[i])
 
     expresion_completa = '|'.join([f'({reemplazar_referencias(exp)})' for _, exp in expresiones])
     print("\nExpresion completa: ")
