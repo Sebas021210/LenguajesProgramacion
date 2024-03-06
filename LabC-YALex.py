@@ -306,7 +306,14 @@ def AFD_yalex(yalex_contenido):
     def reemplazar_referencias(exp):
         for nombre, valor in expresiones_dict.items():
             if not (exp.startswith("'") and exp.endswith("'")):
-                exp = exp.replace(nombre, f'({valor})')
+                index = exp.find(nombre)
+                while index != -1:
+                    if (
+                        (index == 0 or not exp[index - 1].isalnum()) and
+                        (index + len(nombre) == len(exp) or not exp[index + len(nombre)].isalnum())
+                    ):
+                        exp = exp[:index] + f'({valor})' + exp[index + len(nombre):]
+                    index = exp.find(nombre, index + 1)
         return exp
 
     print("Expresiones: ")
