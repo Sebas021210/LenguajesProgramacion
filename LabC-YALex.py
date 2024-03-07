@@ -49,7 +49,22 @@ def expandir_rango(rango):
     inicio, fin = rango
     return '|'.join([f'({chr(i)})' for i in range(ord(inicio), ord(fin) + 1)])
 
+def reemplazar_caracteres(expresion):
+    expresion = expresion.replace("'\\t'", "'\t'").replace("'\\n'", "'\n'").replace("'\\s'", "'\s'")
+    caracteres_reemplazar = {'\t': '替', '\n': '换', '\s': '空'}
+    for caracter, chino in caracteres_reemplazar.items():
+        expresion = expresion.replace(caracter, chino)
+    return expresion
+
+def revertir_caracteres(expresion):
+    caracteres_revertir = {'替': 't', '换': 'n', '空': 's'}
+    for chino, caracter in caracteres_revertir.items():
+        expresion = expresion.replace(chino, caracter)
+    return expresion
+
 def expandir_extensiones(expresion):
+    expresion = reemplazar_caracteres(expresion)
+
     patron_extension = '[^\]]+'
     inicio = expresion.find('[')
     while inicio != -1:
@@ -66,7 +81,7 @@ def expandir_extensiones(expresion):
                     expresion_rangos.append(expandir_rango((inicio_rango[1], fin_rango[1])))
             elif rango[0] == "'" and rango[-1] == "'":
                 palabra = rango[1:-1]
-                expresion_rangos.append(f'({"|".join(palabra)})')
+                expresion_rangos.append(f'({"|".join(palabra)})') 
             else:
                 expresion_rangos.append(rango)
         
@@ -260,9 +275,10 @@ def graficar_afd_directo(estados, transiciones):
 
     estado_aceptacion = max(nodos.keys()) 
     estados_invertidos = {v: k for k, v in estados.items()}
+    
     for estado, transiciones_estado in transiciones.items():
         for transicion, estado_destino in transiciones_estado.items():
-            dot.edge(estado, estado_destino, label=transicion)
+            dot.edge(estado, estado_destino, label=revertir_caracteres(transicion))
         if estado_aceptacion in estados_invertidos[estado]:
             dot.node(estado, shape='doublecircle')
 
@@ -312,20 +328,17 @@ def AFD_yalex(yalex_contenido):
 
     for _, exp in expresiones:
         expresion_completa = reemplazar_referencias(exp)
-        print("\nExpresion completa: ")
-        print(expresion_completa)
+        print("\nExpresion: ", expresion_completa)
 
         infix = convert_optional(expresion_completa)
         infix = expandir_extensiones(infix)
         infix, alfabeto = convertir_expresion(infix)
         exp_explicita = concatenacion(infix)
         postfix = infix_postfix(exp_explicita)
-        print("\nExpresion postfix: ")
-        print(postfix)
+        print("Expresion postfix: ", postfix)
 
         exp_aumentada = aumentar_expresion(postfix)
-        print("\nExpresion aumentada: ")
-        print(exp_aumentada)
+        print("Expresion aumentada: ", exp_aumentada)
 
         arbol_sintactico = construir_AS(exp_aumentada)
         estados, transiciones, estado_aceptacion = construir_transiciones(arbol_sintactico, exp_aumentada)
