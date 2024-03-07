@@ -52,12 +52,23 @@ def expandir_rango(rango):
 def reemplazar_caracteres(expresion):
     expresion = expresion.replace("'\\t'", "'\t'").replace("'\\n'", "'\n'").replace("'\\s'", "'\s'")
     caracteres_reemplazar = {'\t': '替', '\n': '换', '\s': '空'}
+
+    if expresion.find("['+' '-']") != -1:
+        expresion = expresion.replace("['+' '-']", "['加' '点']")
+    elif expresion.find("['-' '+']") != -1:
+        expresion = expresion.replace("['-' '+']", "['点' '加']")
+    elif expresion.find("['+']") != -1:
+        expresion = expresion.replace("['+']", "['加']")
+    elif expresion.find("['-']") != -1:
+        expresion = expresion.replace("['-']", "['点']")
+
     for caracter, chino in caracteres_reemplazar.items():
         expresion = expresion.replace(caracter, chino)
     return expresion
 
 def revertir_caracteres(expresion):
-    caracteres_revertir = {'替': 't', '换': 'n', '空': 's'}
+    #caracteres_revertir = {'替': 't', '换': 'n', '空': 's'}
+    caracteres_revertir = {'替': 't', '换': 'n', '空': 's', '加': '+', '点': '-'}
     for chino, caracter in caracteres_revertir.items():
         expresion = expresion.replace(chino, caracter)
     return expresion
