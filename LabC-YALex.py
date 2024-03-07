@@ -33,25 +33,11 @@ class TextEditor:
                 file.write(self.text_widget.get(1.0, tk.END))
 
     def run_yalex(self):
-        yalex_code = self.text_widget.get(1.0, tk.END)
+        yalex_contenido = self.text_widget.get(1.0, tk.END)
         try:
-            estados, transiciones, estado_aceptacion = AFD_yalex(yalex_code)
-            self.show_graph(estados, transiciones)
+            estados, transiciones, estado_aceptacion = AFD_yalex(yalex_contenido)
         except Exception as e:
             self.show_error(str(e))
-
-    def show_graph(self, estados, transiciones):
-        dot = graphviz.Digraph(format='png')
-
-        estado_aceptacion = max(nodos.keys())
-        estados_invertidos = {v: k for k, v in estados.items()}
-        for estado, transiciones_estado in transiciones.items():
-            for transicion, estado_destino in transiciones_estado.items():
-                dot.edge(estado, estado_destino, label=transicion)
-            if estado_aceptacion in estados_invertidos[estado]:
-                dot.node(estado, shape='doublecircle')
-
-        dot.render('afd_graph_directo', view=True)
 
     def show_error(self, error_message):
         tk.messagebox.showerror("Error", error_message)
@@ -122,8 +108,8 @@ def convertir_expresion(expresion):
                     if aperturas == 0:
                         break
                 almacen.reverse()
-                lista[i] = ''.join(almacen) + '*'
-                del lista[i+1]
+                lista[i] = ''.join(almacen) + ''.join(almacen) + '*'
+                del lista[i-len(almacen):i]
         else:
             i += 1
 
@@ -324,25 +310,27 @@ def AFD_yalex(yalex_contenido):
     for i in range(len(expresiones)):
         print(expresiones[i])
 
-    expresion_completa = '|'.join([f'({reemplazar_referencias(exp)})' for _, exp in expresiones])
-    print("\nExpresion completa: ")
-    print(expresion_completa)
+    for _, exp in expresiones:
+        expresion_completa = reemplazar_referencias(exp)
+        print("\nExpresion completa: ")
+        print(expresion_completa)
 
-    infix = convert_optional(expresion_completa)
-    infix = expandir_extensiones(infix)
-    infix, alfabeto = convertir_expresion(infix)
-    exp_explicita = concatenacion(infix)
-    postfix = infix_postfix(exp_explicita)
-    print("\nExpresion postfix: ")
-    print(postfix)
+        infix = convert_optional(expresion_completa)
+        infix = expandir_extensiones(infix)
+        infix, alfabeto = convertir_expresion(infix)
+        exp_explicita = concatenacion(infix)
+        postfix = infix_postfix(exp_explicita)
+        print("\nExpresion postfix: ")
+        print(postfix)
 
-    exp_aumentada = aumentar_expresion(postfix)
-    print("\nExpresion aumentada: ")
-    print(exp_aumentada)
+        exp_aumentada = aumentar_expresion(postfix)
+        print("\nExpresion aumentada: ")
+        print(exp_aumentada)
 
-    arbol_sintactico = construir_AS(exp_aumentada)
-    estados, transiciones, estado_aceptacion = construir_transiciones(arbol_sintactico, exp_aumentada)
-
+        arbol_sintactico = construir_AS(exp_aumentada)
+        estados, transiciones, estado_aceptacion = construir_transiciones(arbol_sintactico, exp_aumentada)
+        graficar_afd_directo(estados, transiciones)
+    
     return estados, transiciones, estado_aceptacion
 
 def main():
