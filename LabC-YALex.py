@@ -61,14 +61,15 @@ def reemplazar_caracteres(expresion):
         expresion = expresion.replace("['+']", "['加']")
     elif expresion.find("['-']") != -1:
         expresion = expresion.replace("['-']", "['点']")
+    elif expresion.find("(_)") != -1:
+        expresion = expresion.replace('(_)', '苦')
 
     for caracter, chino in caracteres_reemplazar.items():
         expresion = expresion.replace(caracter, chino)
     return expresion
 
 def revertir_caracteres(expresion):
-    #caracteres_revertir = {'替': 't', '换': 'n', '空': 's'}
-    caracteres_revertir = {'替': 't', '换': 'n', '空': 's', '加': '+', '点': '-'}
+    caracteres_revertir = {'替': 't', '换': 'n', '空': 's', '加': '+', '点': '-', '苦': '_'}
     for chino, caracter in caracteres_revertir.items():
         expresion = expresion.replace(chino, caracter)
     return expresion
