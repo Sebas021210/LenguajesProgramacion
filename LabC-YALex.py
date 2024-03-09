@@ -1,6 +1,7 @@
 import graphviz
 import tkinter as tk
 from tkinter import filedialog
+import os
 
 class TextEditor:
     def __init__(self, root):
@@ -35,6 +36,15 @@ class TextEditor:
     def run_yalex(self):
         yalex_contenido = self.text_widget.get(1.0, tk.END)
         try:
+            carpeta_guardado = 'AFD_Graphs'
+            for archivo in os.listdir(carpeta_guardado):
+                archivo_path = os.path.join(carpeta_guardado, archivo)
+                try:
+                    if os.path.isfile(archivo_path):
+                        os.unlink(archivo_path)
+                except Exception as e:
+                    print(f"No se pudo eliminar {archivo_path}. Razón: {e}")
+
             estados, transiciones, estado_aceptacion = AFD_yalex(yalex_contenido)
         except Exception as e:
             self.show_error(str(e))
@@ -282,7 +292,7 @@ def construir_transiciones(arbol, expresion):
                 transiciones_estados[estado_actual][transicion] = estado_nuevo
     return estados, transiciones_estados, estado_aceptacion
 
-def graficar_afd_directo(estados, transiciones):
+def graficar_afd_directo(estados, transiciones, numero_grafico, carpeta_guardado):
     dot = graphviz.Digraph(format='png')
 
     estado_aceptacion = max(nodos.keys()) 
@@ -294,11 +304,41 @@ def graficar_afd_directo(estados, transiciones):
         if estado_aceptacion in estados_invertidos[estado]:
             dot.node(estado, shape='doublecircle')
 
-    dot.render('afd_graph_directo', view=True)
+    filename = f'afd_graph_directo{numero_grafico}'
+    filepath = os.path.join(carpeta_guardado, filename)
+    dot.render(filepath, view=False)
+
+class State:
+    def __init__(self, is_final=False):
+        self.is_final = is_final
+        self.transitions = {}
+
+class AFN:
+    def __init__(self, state_list):
+        self.initial_state = State()
+        self.states = [self.initial_state] + state_list
+        for state in state_list:
+            self.initial_state.transitions['ε'] = state
+
+    def add_state(self, state):
+        self.states.append(state)
+        self.initial_state.transitions['ε'] = state
+
+def graficar_afn_directo(estados, transiciones):
+    dot = graphviz.Digraph(format='png')
+
+    for i, (estado, transiciones_estado) in enumerate(transiciones.items()):
+        dot.node(str(i), label=f's{i}')
+        for transicion, estado_destino in transiciones_estado.items():
+            dot.edge(str(i), str(estado_destino), label=revertir_caracteres(transicion))
+
+    dot.render('afn_graph', view=True)
 
 def AFD_yalex(yalex_contenido):
     lineas = yalex_contenido.split('\n')
     expresiones = []
+    lista_estados = []
+    carpeta_guardado = 'AFD_Graphs'
 
     def process_string(input_string):
         if input_string.startswith("'") and input_string.endswith("'"):
@@ -354,9 +394,18 @@ def AFD_yalex(yalex_contenido):
 
         arbol_sintactico = construir_AS(exp_aumentada)
         estados, transiciones, estado_aceptacion = construir_transiciones(arbol_sintactico, exp_aumentada)
-        graficar_afd_directo(estados, transiciones)
+        lista_estados.append((estados, transiciones, estado_aceptacion))
     
-    return estados, transiciones, estado_aceptacion
+    for i in range(len(lista_estados)):
+        print(f"\nAFD {i}: ", lista_estados[i])
+        graficar_afd_directo(lista_estados[i][0], lista_estados[i][1], i, carpeta_guardado)
+
+    afn = AFN([State() for _ in range(len(lista_estados))])
+    afn.states = [afn.initial_state] + [State() for _ in range(len(lista_estados))] 
+    print("\nEstados AFN: ", afn.states)
+    #graficar_afn_directo(afn.states, transiciones)
+    
+    return lista_estados, transiciones, estado_aceptacion
 
 def main():
     root = tk.Tk()
