@@ -1,9 +1,0 @@
-digraph {
-	s0 -> s1 [label=h]
-	s0 -> s1 [label=a]
-	s0 -> s1 [label=g]
-	s0 -> s1 [label=i]
-	s0 -> s1 [label=o]
-	s0 -> s1 [label=t]
-	s0 -> s1 [label=l]
-}

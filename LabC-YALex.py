@@ -308,29 +308,101 @@ def graficar_afd_directo(estados, transiciones, numero_grafico, carpeta_guardado
     filepath = os.path.join(carpeta_guardado, filename)
     dot.render(filepath, view=False)
 
-class State:
-    def __init__(self, is_final=False):
-        self.is_final = is_final
-        self.transitions = {}
+class estado:
+    label = None
+    transicion1 = None 
+    transicion2 = None 
+    id = None
 
-class AFN:
-    def __init__(self, state_list):
-        self.initial_state = State()
-        self.states = [self.initial_state] + state_list
-        for state in state_list:
-            self.initial_state.transitions['ε'] = state
+class afn:
+    inicial, accept = None, None
 
-    def add_state(self, state):
-        self.states.append(state)
-        self.initial_state.transitions['ε'] = state
+    def __init__(self, inicial, accept):
+        self.inicial, self.accept = inicial, accept
 
-def graficar_afn_directo(estados, transiciones):
+    def get_all_transitions(self):
+        transitions = []
+        estados = 0 
+        transiciones = []
+
+        def visit(estado):
+            nonlocal transitions
+            nonlocal estados 
+            nonlocal transiciones
+            estados += 1
+            if estado.transicion1 is not None:
+                transition = (estado, estado.label, estado.transicion1)
+                transiciones.append((estados,estado.label, estado.transicion1))
+                if transition not in transitions:
+                    transitions.append(transition)
+                    visit(estado.transicion1)
+            if estado.transicion2 is not None:
+                transition = (estado, estado.label, estado.transicion2)
+                transiciones.append((estados,estado.label, estado.transicion2))
+                if transition not in transitions:
+                    transitions.append(transition)
+                    visit(estado.transicion2)
+        visit(self.inicial)
+        self.transitions = transitions
+        self.transiciones = transiciones
+        return transiciones
+
+def postfix_afn(exp_postfix):
+    afnstack = []
+    epsilon = 'E'
+
+    for c in exp_postfix:
+        if c == '*':
+            afn1 = afnstack.pop()
+            inicial, accept = estado(), estado()
+            inicial.transicion1, inicial.transicion2 = afn1.inicial, accept
+            afn1.accept.transicion1, afn1.accept.transicion2 = afn1.inicial, accept
+            afnstack.append(afn(inicial, accept))
+        elif c == '.':
+            afn2, afn1 = afnstack.pop(), afnstack.pop()
+            afn1.accept.transicion1 = afn2.inicial
+            afnstack.append(afn(afn1.inicial, afn2.accept))
+        elif c == '|':
+            afn2, afn1 = afnstack.pop(), afnstack.pop()
+            inicial = estado()
+            inicial.transicion1, inicial.transicion2 = afn1.inicial, afn2.inicial
+            accept = estado()
+            afn1.accept.transicion1, afn2.accept.transicion1 = accept, accept
+            afnstack.append(afn(inicial, accept))
+        elif c == 'E':
+            accept, inicial = estado(), estado()
+            inicial.transicion1 = accept
+            afnstack.append(afn(inicial, accept))
+        else:
+            accept, inicial = estado(), estado()
+            inicial.label, inicial.transicion1 = c, accept
+            afnstack.append(afn(inicial, accept))
+
+    return afnstack.pop()
+
+def graficar_afn(afn):
     dot = graphviz.Digraph(format='png')
+    estados = 0  
 
-    for i, (estado, transiciones_estado) in enumerate(transiciones.items()):
-        dot.node(str(i), label=f's{i}')
-        for transicion, estado_destino in transiciones_estado.items():
-            dot.edge(str(i), str(estado_destino), label=revertir_caracteres(transicion))
+    def add_estados_edges(node, visited):
+        nonlocal estados
+        if node in visited:
+            return
+        visited.add(node)
+        estados += 1
+
+        dot.node(str(id(node)), label=f'q{estados}')
+
+        if node.transicion1:
+            label = node.transicion1.label if node.transicion1.label else 'ε'
+            dot.edge(str(id(node)), str(id(node.transicion1)), label=label)
+            add_estados_edges(node.transicion1, visited)
+        if node.transicion2:
+            label = node.transicion2.label if node.transicion2.label else 'ε'
+            dot.edge(str(id(node)), str(id(node.transicion2)), label=label)
+            add_estados_edges(node.transicion2, visited)
+
+    add_estados_edges(afn.inicial, set())
 
     dot.render('afn_graph', view=True)
 
@@ -386,6 +458,7 @@ def AFD_yalex(yalex_contenido):
         infix = expandir_extensiones(infix)
         infix, alfabeto = convertir_expresion(infix)
         exp_explicita = concatenacion(infix)
+        print("Expresion explicita: ", exp_explicita)
         postfix = infix_postfix(exp_explicita)
         print("Expresion postfix: ", postfix)
 
@@ -400,10 +473,14 @@ def AFD_yalex(yalex_contenido):
         print(f"\nAFD {i}: ", lista_estados[i])
         graficar_afd_directo(lista_estados[i][0], lista_estados[i][1], i, carpeta_guardado)
 
-    afn = AFN([State() for _ in range(len(lista_estados))])
-    afn.states = [afn.initial_state] + [State() for _ in range(len(lista_estados))] 
-    print("\nEstados AFN: ", afn.states)
-    #graficar_afn_directo(afn.states, transiciones)
+    expresion_completa = '|'.join([f'({reemplazar_referencias(exp)})' for _, exp in expresiones])
+    infix = convert_optional(expresion_completa)
+    infix = expandir_extensiones(infix)
+    infix, alfabeto = convertir_expresion(infix)
+    exp_explicita = concatenacion(infix)
+    postfix = infix_postfix(exp_explicita)
+    afn = postfix_afn(postfix)
+    #graficar_afn(afn)
     
     return lista_estados, transiciones, estado_aceptacion
 
