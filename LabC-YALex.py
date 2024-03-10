@@ -45,7 +45,7 @@ class TextEditor:
                 except Exception as e:
                     print(f"No se pudo eliminar {archivo_path}. Razón: {e}")
 
-            estados, transiciones, estado_aceptacion = AFD_yalex(yalex_contenido)
+            estados, transiciones, estado_aceptacion = AFD_yalex(yalex_contenido, self.show_error)
         except Exception as e:
             self.show_error(str(e))
 
@@ -394,11 +394,11 @@ def graficar_afn(afn):
         dot.node(str(id(node)), label=f'q{estados}')
 
         if node.transicion1:
-            label = node.transicion1.label if node.transicion1.label else 'ε'
+            label = revertir_caracteres(node.transicion1.label) if node.transicion1.label else 'ε'
             dot.edge(str(id(node)), str(id(node.transicion1)), label=label)
             add_estados_edges(node.transicion1, visited)
         if node.transicion2:
-            label = node.transicion2.label if node.transicion2.label else 'ε'
+            label = revertir_caracteres(node.transicion2.label) if node.transicion2.label else 'ε'
             dot.edge(str(id(node)), str(id(node.transicion2)), label=label)
             add_estados_edges(node.transicion2, visited)
 
@@ -406,11 +406,41 @@ def graficar_afn(afn):
 
     dot.render('afn_graph', view=True)
 
-def AFD_yalex(yalex_contenido):
+class SintaxisError(Exception):
+    def __init__(self, message, expresion):
+        super().__init__(message)
+        self.expresion = expresion
+
+def validar_sintaxis(expresion):
+    stack = []
+    single_quote_open = False
+
+    for char in expresion:
+        if char == "'":
+            single_quote_open = not single_quote_open
+        elif char in "([{":
+            stack.append(char)
+        elif char in ")]}":
+            if not stack:
+                raise SintaxisError(f"Error: Paréntesis o corchete sin coincidencia de apertura en la expresión.", expresion)
+            ultimo = stack.pop()
+            if (char == ")" and ultimo != "(") or (char == "]" and ultimo != "[") or (char == "}" and ultimo != "{"):
+                raise SintaxisError(f"Error: Paréntesis o corchete no coincide con la apertura en la expresión.", expresion)
+
+    if stack:
+        raise SintaxisError(f"Error: Paréntesis o corchete sin coincidencia de cierre en la expresión.", expresion)
+
+    if single_quote_open:
+        raise SintaxisError(f"Error: Comilla simple sin coincidencia de cierre en la expresión.", expresion)
+
+def AFD_yalex(yalex_contenido, show_error_function):
     lineas = yalex_contenido.split('\n')
     expresiones = []
     lista_estados = []
     carpeta_guardado = 'AFD_Graphs'
+    error_ocurrido = False
+    transiciones = None
+    estado_aceptacion = None 
 
     def process_string(input_string):
         if input_string.startswith("'") and input_string.endswith("'"):
@@ -451,6 +481,13 @@ def AFD_yalex(yalex_contenido):
         print(expresiones[i])
 
     for _, exp in expresiones:
+        try:
+            validar_sintaxis(exp)
+        except SintaxisError as e:
+            show_error_function(f"{str(e)} (Expresión: {e.expresion})")
+            error_ocurrido = True
+            break  
+
         expresion_completa = reemplazar_referencias(exp)
         print("\nExpresion: ", expresion_completa)
 
@@ -468,20 +505,21 @@ def AFD_yalex(yalex_contenido):
         arbol_sintactico = construir_AS(exp_aumentada)
         estados, transiciones, estado_aceptacion = construir_transiciones(arbol_sintactico, exp_aumentada)
         lista_estados.append((estados, transiciones, estado_aceptacion))
-    
-    for i in range(len(lista_estados)):
-        print(f"\nAFD {i}: ", lista_estados[i])
-        graficar_afd_directo(lista_estados[i][0], lista_estados[i][1], i, carpeta_guardado)
 
-    expresion_completa = '|'.join([f'({reemplazar_referencias(exp)})' for _, exp in expresiones])
-    infix = convert_optional(expresion_completa)
-    infix = expandir_extensiones(infix)
-    infix, alfabeto = convertir_expresion(infix)
-    exp_explicita = concatenacion(infix)
-    postfix = infix_postfix(exp_explicita)
-    afn = postfix_afn(postfix)
-    #graficar_afn(afn)
-    
+    if not error_ocurrido:
+        for i in range(len(lista_estados)):
+            #print(f"\nAFD {i}: ", lista_estados[i])
+            graficar_afd_directo(lista_estados[i][0], lista_estados[i][1], i, carpeta_guardado)
+
+        expresion_completa = '|'.join([f'({reemplazar_referencias(exp)})' for _, exp in expresiones])
+        infix = convert_optional(expresion_completa)
+        infix = expandir_extensiones(infix)
+        infix, alfabeto = convertir_expresion(infix)
+        exp_explicita = concatenacion(infix)
+        postfix = infix_postfix(exp_explicita)
+        afn = postfix_afn(postfix)
+        graficar_afn(afn)
+
     return lista_estados, transiciones, estado_aceptacion
 
 def main():
