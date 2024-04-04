@@ -12,8 +12,8 @@ let id = letter(letter|str|digit)*
 let number = digits(digits)?(E['+' '-']?digits)?
 
 rule tokens = 
-    ws
-  | id        { return ID }               (* Cambie por una acción válida, que devuelva el token *)
+  | ws
+  | id        { return ID } 
   | number    { return NUMBER }
   | ';'       { return SEMICOLON }
   | ":="      { return ASSIGNOP }
