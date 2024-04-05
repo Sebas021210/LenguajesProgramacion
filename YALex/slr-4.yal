@@ -15,15 +15,13 @@ rule tokens =
   | ws
   | id        { return ID } 
   | number    { return NUMBER }
-  | ';'       { return SEMICOLON }
-  | ":="      { return ASSIGNOP }
-  | '<'       { return LT }
-  | '='       { return EQ }
-  | '+'       { return PLUS }
-  | '-'       { return MINUS }
-  | '*'       { return TIMES }
-  | '/'       { return DIV }
-  | '('       { return LPAREN }
-  | ')'       { return RPAREN }
+  | (;)       { return SEMICOLON }
+  | (:=)      { return ASSIGNOP }
+  | (<)       { return LT }
+  | (=)       { return EQ }
+  | (+)       { return PLUS }
+  | (-)       { return MINUS }
+  | (*)       { return TIMES }
+  | (/)       { return DIV }
 
 (* Introducir cualquier trailer aqui *)

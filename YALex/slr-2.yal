@@ -14,11 +14,9 @@ rule tokens =
   | ws        { return WHITESPACE }
   | id        { return ID }
   | number    { return NUMBER }
-  | '+'       { return PLUS }
-  | '-'       { return MINUS }
-  | '*'       { return TIMES }
-  | '/'       { return DIV }
-  | '('       { return LPAREN }
-  | ')'       { return RPAREN }
+  | (+)       { return PLUS }
+  | (*)       { return TIMES }
+  | (-)       { return MINUS }
+  | (/)       { return DIV }
 
 (* Introducir cualquier trailer aqui *)

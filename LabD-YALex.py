@@ -71,13 +71,31 @@ def reemplazar_caracteres(expresion):
         expresion = expresion.replace("['-']", "['点']")
     elif expresion.find("(_)") != -1:
         expresion = expresion.replace('(_)', '苦')
+    elif expresion.find("(+)") != -1:
+        expresion = expresion.replace("(+)", "加")
+    elif expresion.find("(-)") != -1:
+        expresion = expresion.replace("(-)", "点")
+    elif expresion.find("(*)") != -1:
+        expresion = expresion.replace("(*)", "阿")
+    elif expresion.find("(/)") != -1:
+        expresion = expresion.replace("(/)", "贝")
+    elif expresion.find("(;)") != -1:
+        expresion = expresion.replace("(;)", "色")
+    elif expresion.find("(:=)") != -1:
+        expresion = expresion.replace("(:=)", "日")
+    elif expresion.find("(<)") != -1:
+        expresion = expresion.replace("(<)", "伊")
+    elif expresion.find("(>)") != -1:
+        expresion = expresion.replace("(>)", "鸡")
+    elif expresion.find("(=)") != -1:
+        expresion = expresion.replace("(=)", "卡")
 
     for caracter, chino in caracteres_reemplazar.items():
         expresion = expresion.replace(caracter, chino)
     return expresion
 
 def revertir_caracteres(expresion):
-    caracteres_revertir = {'替': 't', '换': 'n', '空': 's', '加': '+', '点': '-', '苦': '_'}
+    caracteres_revertir = {'替': 't', '换': 'n', '空': 's', '加': '+', '点': '-', '苦': '_', '阿': '*', '贝': '/', '色': ';', '日': ':=', '伊': '<', '鸡': '>', '卡': '='}
     for chino, caracter in caracteres_revertir.items():
         expresion = expresion.replace(chino, caracter)
     return expresion
@@ -382,10 +400,11 @@ def AFD_yalex(yalex_contenido, show_error_function):
     lineas = yalex_contenido.split('\n')
     expresiones = []
     lista_estados = []
+    lista_transiciones_let = []
     carpeta_guardado = 'AFD_Graphs'
     error_ocurrido = False
     transiciones = None
-    estado_aceptacion = None 
+    estado_aceptacion = None
 
     def process_string(input_string):
         if input_string.startswith("'") and input_string.endswith("'"):
@@ -431,36 +450,66 @@ def AFD_yalex(yalex_contenido, show_error_function):
         except SintaxisError as e:
             show_error_function(f"{str(e)} (Expresión: {e.expresion})")
             error_ocurrido = True
-            break  
+            break
 
         expresion_completa = reemplazar_referencias(exp)
-        print("\nExpresion: ", expresion_completa)
 
         infix = convert_optional(expresion_completa)
         infix = expandir_extensiones(infix)
         infix, alfabeto = convertir_expresion(infix)
         exp_explicita = concatenacion(infix)
-        print("Expresion explicita: ", exp_explicita)
         postfix = infix_postfix(exp_explicita)
-        print("Expresion postfix: ", postfix)
 
         exp_aumentada = aumentar_expresion(postfix)
-        print("Expresion aumentada: ", exp_aumentada)
-
+        
         arbol_sintactico = construir_AS(exp_aumentada)
         estados, transiciones, estado_aceptacion = construir_transiciones(arbol_sintactico, exp_aumentada)
-        lista_estados.append((estados, transiciones, estado_aceptacion))
+        lista_transiciones_let.append((estados, transiciones, estado_aceptacion))
 
     if not error_ocurrido:
-        for i in range(len(lista_estados)):
-            print(f"\nAFD {i}: ", lista_estados[i])
-            graficar_afd_directo(lista_estados[i][0], lista_estados[i][1], i, carpeta_guardado)
-  
-        estados_totales, transiciones_totales, nuevo_estado_inicial = unir_afds(lista_estados)
-        print(f"\nAFD Unido: ", estados_totales, transiciones_totales, nuevo_estado_inicial)
-        print("\nEstados AFD Unido: ", estados_totales)
-        print("\nTransiciones AFD Unido: ", transiciones_totales)
-        graficar_afd_unidos(estados_totales, transiciones_totales, nuevo_estado_inicial)
+        en_rule_tokens = False
+        for linea in lineas:
+            if linea.startswith('rule tokens'):
+                en_rule_tokens = True
+                continue
+
+            if en_rule_tokens:
+                if '|' not in linea:
+                    break
+
+                partes = linea.strip().split('|')
+                if len(partes) > 1:
+                    exp = partes[1].strip()
+                    exp = exp.split('{')[0].strip()
+                    exp = reemplazar_referencias(exp)
+
+                try:
+                    validar_sintaxis(exp)
+                except SintaxisError as e:
+                    show_error_function(f"{str(e)} (Expresión: {e.expresion})")
+                    error_ocurrido = True
+                    break
+
+                if not error_ocurrido:
+                    print("\nExpresion: ", exp)
+                    infix = convert_optional(exp)
+                    infix = expandir_extensiones(infix)
+                    infix, alfabeto = convertir_expresion(infix)
+                    exp_explicita = concatenacion(infix)
+                    print("Expresion explicita: ", exp_explicita)
+                    postfix = infix_postfix(exp_explicita)
+                    print("Expresion postfix: ", postfix)
+                    exp_aumentada = aumentar_expresion(postfix)
+                    print("Expresion aumentada: ", exp_aumentada)
+                    arbol_sintactico = construir_AS(exp_aumentada)
+                    estados, transiciones, estado_aceptacion = construir_transiciones(arbol_sintactico, exp_aumentada)
+                    lista_estados.append((estados, transiciones, estado_aceptacion))
+
+                    graficar_afd_directo(estados, transiciones, len(lista_estados) - 1, carpeta_guardado)
+
+        if not error_ocurrido:
+            estados_totales, transiciones_totales, nuevo_estado_inicial = unir_afds(lista_estados)
+            graficar_afd_unidos(estados_totales, transiciones_totales, nuevo_estado_inicial)
 
     return lista_estados, transiciones, estado_aceptacion
 
