@@ -421,17 +421,17 @@ def validar_sintaxis(expresion):
     if single_quote_open:
         raise SintaxisError(f"Error: Comilla simple sin coincidencia de cierre en la expresión.", expresion)
 
-def simular_cadena(cadena, estados, transiciones, estado_aceptacion):
+def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_tokens):
     tokens = []
     estados_invertidos = {item: index for index, item in enumerate(estados)}
-
     estado_inicial_actual_index = 0
+    automata_index = None
+    sufijos = ['_s0', '_s1', '_s2', '_s3', '_s4', '_s5', '_s6', '_s7', '_s8', '_s9']
 
     while cadena:
         estado_actual = transiciones['s0'][estado_inicial_actual_index]
-        #print(f"\nEstado actual: {estado_actual}, Cadena restante: {cadena}")
         encontrado = False
-        
+
         if estado_actual != 's0':
             for simbolo in transiciones[estado_actual]:
                 if cadena.startswith(simbolo):
@@ -439,25 +439,33 @@ def simular_cadena(cadena, estados, transiciones, estado_aceptacion):
                     tokens.append((simbolo, estado_actual))
                     cadena = cadena[len(simbolo):]
                     encontrado = True
-                    #print(f"Simbolo encontrado: {simbolo}, Nuevo estado: {estado_actual}")
                     break
 
         if not encontrado:
             estado_inicial_actual_index += 1
             if estado_inicial_actual_index >= len(transiciones['s0']):
-                #print("No se encontró ningún símbolo que coincida en ningún estado inicial")
                 return tokens, cadena
 
-    if estado_aceptacion == estado_actual:
-        return tokens, ''
+        for sufijo in sufijos:
+            if estado_actual.startswith('q') and estado_actual.endswith(sufijo):
+                automata_index = estado_inicial_actual_index
+                break
+
+    if automata_index is not None:
+        token_name = lista_tokens[automata_index]
+        print(f"Token encontrado: {token_name}")
     else:
-        return tokens, cadena
+        print("No se pudo simular completamente la cadena.")
+
+    return tokens, ''
 
 def AFD_yalex(yalex_contenido, lista_cadenas, show_error_function):
     lineas = yalex_contenido.split('\n')
     expresiones = []
     lista_estados = []
     lista_transiciones_let = []
+    lista_tokens = []
+    lista_unidos = []
     carpeta_guardado = 'AFD_Graphs'
     error_ocurrido = False
     transiciones = None
@@ -538,6 +546,7 @@ def AFD_yalex(yalex_contenido, lista_cadenas, show_error_function):
                 if len(partes) > 1:
                     exp = partes[1].strip()
                     exp = exp.split('{')[0].strip()
+                    lista_tokens.append(exp)
                     exp = reemplazar_referencias(exp)
 
                 try:
@@ -566,21 +575,18 @@ def AFD_yalex(yalex_contenido, lista_cadenas, show_error_function):
 
         if not error_ocurrido:
             estados_totales, transiciones_totales, nuevo_estado_inicial = unir_afds(lista_estados)
+            lista_unidos.append((estados_totales, transiciones_totales, estado_aceptacion))
             graficar_afd_unidos(estados_totales, transiciones_totales, nuevo_estado_inicial)
 
         transiciones_totales = convertir_transiciones(transiciones_totales, revertir_caracteres)
 
         print(f"\nTransiciones: {transiciones_totales}")
+        print(f"\nTokens: {lista_tokens}") 
 
         cadenas_entrada = lista_cadenas
         for cadena_entrada in cadenas_entrada:
             print(f"\nSimulando cadena: {cadena_entrada}")
-            tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion)
-            print("\nTokens encontrados:")
-            for token in tokens:
-                print(token)
-            if resto:
-                print(f"Cadena no reconocida completamente: {resto}")
+            tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion, lista_tokens)
 
     return lista_estados, transiciones, estado_aceptacion
 
