@@ -100,6 +100,17 @@ def revertir_caracteres(expresion):
         expresion = expresion.replace(chino, caracter)
     return expresion
 
+def convertir_transiciones(transiciones, revertir_caracteres):
+    nuevas_transiciones = {}
+    for clave, valor in transiciones.items():
+        nueva_clave = revertir_caracteres(clave)
+        if isinstance(valor, dict):
+            nuevo_valor = {revertir_caracteres(k): revertir_caracteres(v) for k, v in valor.items()}
+        else:
+            nuevo_valor = [revertir_caracteres(v) for v in valor]
+        nuevas_transiciones[nueva_clave] = nuevo_valor
+    return nuevas_transiciones
+
 def expandir_extensiones(expresion):
     expresion = reemplazar_caracteres(expresion)
 
@@ -396,6 +407,38 @@ def validar_sintaxis(expresion):
     if single_quote_open:
         raise SintaxisError(f"Error: Comilla simple sin coincidencia de cierre en la expresión.", expresion)
 
+def simular_cadena(cadena, estados, transiciones, estado_aceptacion):
+    tokens = []
+    estados_invertidos = {item: index for index, item in enumerate(estados)}
+
+    estado_inicial_actual_index = 0
+
+    while cadena:
+        estado_actual = transiciones['s0'][estado_inicial_actual_index]
+        #print(f"\nEstado actual: {estado_actual}, Cadena restante: {cadena}")
+        encontrado = False
+        
+        if estado_actual != 's0':
+            for simbolo in transiciones[estado_actual]:
+                if cadena.startswith(simbolo):
+                    estado_actual = transiciones[estado_actual][simbolo]
+                    tokens.append((simbolo, estado_actual))
+                    cadena = cadena[len(simbolo):]
+                    encontrado = True
+                    #print(f"Simbolo encontrado: {simbolo}, Nuevo estado: {estado_actual}")
+                    break
+
+        if not encontrado:
+            estado_inicial_actual_index += 1
+            if estado_inicial_actual_index >= len(transiciones['s0']):
+                #print("No se encontró ningún símbolo que coincida en ningún estado inicial")
+                return tokens, cadena
+
+    if estado_aceptacion == estado_actual:
+        return tokens, ''
+    else:
+        return tokens, cadena
+
 def AFD_yalex(yalex_contenido, show_error_function):
     lineas = yalex_contenido.split('\n')
     expresiones = []
@@ -505,11 +548,25 @@ def AFD_yalex(yalex_contenido, show_error_function):
                     estados, transiciones, estado_aceptacion = construir_transiciones(arbol_sintactico, exp_aumentada)
                     lista_estados.append((estados, transiciones, estado_aceptacion))
 
-                    graficar_afd_directo(estados, transiciones, len(lista_estados) - 1, carpeta_guardado)
+                    #graficar_afd_directo(estados, transiciones, len(lista_estados) - 1, carpeta_guardado)
 
         if not error_ocurrido:
             estados_totales, transiciones_totales, nuevo_estado_inicial = unir_afds(lista_estados)
             graficar_afd_unidos(estados_totales, transiciones_totales, nuevo_estado_inicial)
+
+        transiciones_totales = convertir_transiciones(transiciones_totales, revertir_caracteres)
+
+        print(f"\nTransiciones: {transiciones_totales}")
+
+        cadenas_entrada = ["variable123", 'var', '+']
+        for cadena_entrada in cadenas_entrada:
+            print(f"\nSimulando cadena: {cadena_entrada}")
+            tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion)
+            print("\nTokens encontrados:")
+            for token in tokens:
+                print(token)
+            if resto:
+                print(f"Cadena no reconocida completamente: {resto}")
 
     return lista_estados, transiciones, estado_aceptacion
 
