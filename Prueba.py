@@ -11,6 +11,9 @@ class TextEditor:
         self.text_widget = tk.Text(root, wrap="word", undo=True, autoseparators=True)
         self.text_widget.pack(expand=True, fill="both")
 
+        self.cadena_text_widget = tk.Text(root, wrap="word", undo=True, autoseparators=True)
+        self.cadena_text_widget.pack(expand=True, fill="both")
+
         menu_bar = tk.Menu(root)
         root.config(menu=menu_bar)
 
@@ -44,7 +47,18 @@ class TextEditor:
             except Exception as e:
                 print(f"No se pudo eliminar {archivo_path}. Razón: {e}")
 
-        estados, transiciones, estado_aceptacion = AFD_yalex(yalex_contenido, self.show_error)
+        cadena_input = self.get_cadena_input()
+        lista_cadenas = self.convertir_a_lista(cadena_input)
+
+        estados, transiciones, estado_aceptacion = AFD_yalex(yalex_contenido, lista_cadenas, self.show_error)
+
+    def get_cadena_input(self):
+        cadena_input = self.cadena_text_widget.get(1.0, tk.END)
+        return cadena_input
+
+    def convertir_a_lista(self, cadena_input):
+        lista_cadenas = cadena_input.split()
+        return lista_cadenas
     
     def show_error(self, error_message):
         tk.messagebox.showerror("Error", error_message)
@@ -439,7 +453,7 @@ def simular_cadena(cadena, estados, transiciones, estado_aceptacion):
     else:
         return tokens, cadena
 
-def AFD_yalex(yalex_contenido, show_error_function):
+def AFD_yalex(yalex_contenido, lista_cadenas, show_error_function):
     lineas = yalex_contenido.split('\n')
     expresiones = []
     lista_estados = []
@@ -558,7 +572,7 @@ def AFD_yalex(yalex_contenido, show_error_function):
 
         print(f"\nTransiciones: {transiciones_totales}")
 
-        cadenas_entrada = ["variable123", 'var', '+']
+        cadenas_entrada = lista_cadenas
         for cadena_entrada in cadenas_entrada:
             print(f"\nSimulando cadena: {cadena_entrada}")
             tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion)
