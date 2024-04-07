@@ -421,7 +421,7 @@ def validar_sintaxis(expresion):
     if single_quote_open:
         raise SintaxisError(f"Error: Comilla simple sin coincidencia de cierre en la expresión.", expresion)
 
-def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_tokens):
+def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_tokens, yalex_contenido):
     tokens = []
     estados_invertidos = {item: index for index, item in enumerate(estados)}
     estado_inicial_actual_index = 0
@@ -454,6 +454,26 @@ def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_token
     if automata_index is not None:
         token_name = lista_tokens[automata_index]
         print(f"Token encontrado: {token_name}")
+
+        en_rule_tokens = False
+        for linea in yalex_contenido.split('\n'):
+            if linea.startswith('rule tokens'):
+                en_rule_tokens = True
+                continue
+
+            if en_rule_tokens:
+                if '|' not in linea:
+                    break
+
+                partes = linea.strip().split('|')
+                if len(partes) > 1:
+                    exp = partes[1].strip()
+                    exp = exp.split('{')[0].strip()
+                    if exp == token_name:
+                        action = partes[1].split('{')[1].split('}')[0].strip()
+                        exec(action) 
+                        break
+
     else:
         print("No se pudo simular completamente la cadena.")
 
@@ -586,7 +606,7 @@ def AFD_yalex(yalex_contenido, lista_cadenas, show_error_function):
         cadenas_entrada = lista_cadenas
         for cadena_entrada in cadenas_entrada:
             print(f"\nSimulando cadena: {cadena_entrada}")
-            tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion, lista_tokens)
+            tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion, lista_tokens, yalex_contenido)
 
     return lista_estados, transiciones, estado_aceptacion
 
