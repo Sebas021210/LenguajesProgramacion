@@ -2,17 +2,17 @@
 
 (* Introducir cualquier header aqui *)
 
-let delim = ['\t' '\n']
+let delim = ['\s' '\t' '\n']
 let ws = delim+
-let letter = ['A'-'D' 'a'-'d']
-let digit = ['0'-'3']
+let letter = ['A'-'Z' 'a'-'z']
+let digit = ['0'-'9']
 let id = letter(letter|digit)*
 
 rule tokens = 
   | ws
-  | id        { return ID }
-  | (+)       { return PLUS }
-  | (*)       { return TIMES }
-  | (-)       { return MINUS }
+  | id        { print("Token: ID") }
+  | (+)       { print("Token: PLUS") }
+  | (*)       { print("Token: TIMES") }
+  | (-)       { print("Token: MINUS") }
 
 (* Introducir cualquier trailer aqui *)

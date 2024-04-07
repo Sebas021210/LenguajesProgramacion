@@ -2,26 +2,28 @@
 
 (* Introducir cualquier header aqui *)
 
-let delim = ['\t' '\n']
+let delim = ['\s' '\t' '\n']
 let ws = delim+
-let letter = ['A'-'C' 'a'-'c']
+let letter = ['A'-'Z' 'a'-'z']
 let str = (_)*
-let digit = ['0'-'2']
+let digit = ['0'-'9']
 let digits = digit+
 let id = letter(letter|str|digit)*
 let number = digits(digits)?(E['+' '-']?digits)?
+let reserved = ['if' 'else' 'while' 'for' 'return' 'int' 'float' 'bool' 'true' 'false']
 
 rule tokens = 
   | ws
-  | id        { return ID } 
-  | number    { return NUMBER }
-  | (;)       { return SEMICOLON }
-  | (:=)      { return ASSIGNOP }
-  | (<)       { return LT }
-  | (=)       { return EQ }
-  | (+)       { return PLUS }
-  | (-)       { return MINUS }
-  | (*)       { return TIMES }
-  | (/)       { return DIV }
+  | id        { print("Token: ID") } 
+  | number    { print("Token: NUMBER") }
+  | reserved  { print("Token: RESERVED") }
+  | (;)       { print("Token: SEMICOLON") }
+  | (:=)      { print("Token: ASSIGNOP") }
+  | (<)       { print("Token: LT") }
+  | (=)       { print("Token: EQ") }
+  | (+)       { print("Token: PLUS") }
+  | (-)       { print("Token: MINUS") }
+  | (*)       { print("Token: TIMES") }
+  | (/)       { print("Token: DIV") }
 
 (* Introducir cualquier trailer aqui *)
