@@ -10,13 +10,13 @@ let digit = ['0'-'9']
 let digits = digit+
 let id = letter(letter|str|digit)*
 let number = digits(digits)?(E['+' '-']?digits)?
-let reserved = ['if' 'else' 'while' 'for' 'return' 'int' 'float' 'bool' 'true' 'false']
+let reserved = ['if' 'else' 'while' 'for']
 
 rule tokens = 
   | ws
+  | reserved  { print("Token: RESERVED") }
   | id        { print("Token: ID") } 
   | number    { print("Token: NUMBER") }
-  | reserved  { print("Token: RESERVED") }
   | (;)       { print("Token: SEMICOLON") }
   | (:=)      { print("Token: ASSIGNOP") }
   | (<)       { print("Token: LT") }
