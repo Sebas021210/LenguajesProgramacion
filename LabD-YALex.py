@@ -11,6 +11,9 @@ class TextEditor:
         self.text_widget = tk.Text(root, wrap="word", undo=True, autoseparators=True)
         self.text_widget.pack(expand=True, fill="both")
 
+        self.cadena_text_widget = tk.Text(root, wrap="word", undo=True, autoseparators=True)
+        self.cadena_text_widget.pack(expand=True, fill="both")
+
         menu_bar = tk.Menu(root)
         root.config(menu=menu_bar)
 
@@ -44,7 +47,18 @@ class TextEditor:
             except Exception as e:
                 print(f"No se pudo eliminar {archivo_path}. Razón: {e}")
 
-        estados, transiciones, estado_aceptacion = AFD_yalex(yalex_contenido, self.show_error)
+        cadena_input = self.get_cadena_input()
+        lista_cadenas = self.convertir_a_lista(cadena_input)
+
+        estados, transiciones, estado_aceptacion = AFD_yalex(yalex_contenido, lista_cadenas, self.show_error)
+
+    def get_cadena_input(self):
+        cadena_input = self.cadena_text_widget.get(1.0, tk.END)
+        return cadena_input
+
+    def convertir_a_lista(self, cadena_input):
+        lista_cadenas = cadena_input.split()
+        return lista_cadenas
     
     def show_error(self, error_message):
         tk.messagebox.showerror("Error", error_message)
@@ -99,6 +113,17 @@ def revertir_caracteres(expresion):
     for chino, caracter in caracteres_revertir.items():
         expresion = expresion.replace(chino, caracter)
     return expresion
+
+def convertir_transiciones(transiciones, revertir_caracteres):
+    nuevas_transiciones = {}
+    for clave, valor in transiciones.items():
+        nueva_clave = revertir_caracteres(clave)
+        if isinstance(valor, dict):
+            nuevo_valor = {revertir_caracteres(k): revertir_caracteres(v) for k, v in valor.items()}
+        else:
+            nuevo_valor = [revertir_caracteres(v) for v in valor]
+        nuevas_transiciones[nueva_clave] = nuevo_valor
+    return nuevas_transiciones
 
 def expandir_extensiones(expresion):
     expresion = reemplazar_caracteres(expresion)
@@ -396,11 +421,71 @@ def validar_sintaxis(expresion):
     if single_quote_open:
         raise SintaxisError(f"Error: Comilla simple sin coincidencia de cierre en la expresión.", expresion)
 
-def AFD_yalex(yalex_contenido, show_error_function):
+def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_tokens, yalex_contenido):
+    tokens = []
+    estados_invertidos = {item: index for index, item in enumerate(estados)}
+    estado_inicial_actual_index = 0
+    automata_index = None
+    sufijos = ['_s0', '_s1', '_s2', '_s3', '_s4', '_s5', '_s6', '_s7', '_s8', '_s9']
+
+    while cadena:
+        estado_actual = transiciones['s0'][estado_inicial_actual_index]
+        encontrado = False
+
+        if estado_actual != 's0':
+            for simbolo in transiciones[estado_actual]:
+                if cadena.startswith(simbolo):
+                    estado_actual = transiciones[estado_actual][simbolo]
+                    tokens.append((simbolo, estado_actual))
+                    cadena = cadena[len(simbolo):]
+                    encontrado = True
+                    break
+
+        if not encontrado:
+            estado_inicial_actual_index += 1
+            if estado_inicial_actual_index >= len(transiciones['s0']):
+                return tokens, cadena
+
+        for sufijo in sufijos:
+            if estado_actual.startswith('q') and estado_actual.endswith(sufijo):
+                automata_index = estado_inicial_actual_index
+                break
+
+    if automata_index is not None:
+        token_name = lista_tokens[automata_index]
+        print(f"Token encontrado: {token_name}")
+
+        en_rule_tokens = False
+        for linea in yalex_contenido.split('\n'):
+            if linea.startswith('rule tokens'):
+                en_rule_tokens = True
+                continue
+
+            if en_rule_tokens:
+                if '|' not in linea:
+                    break
+
+                partes = linea.strip().split('|')
+                if len(partes) > 1:
+                    exp = partes[1].strip()
+                    exp = exp.split('{')[0].strip()
+                    if exp == token_name:
+                        action = partes[1].split('{')[1].split('}')[0].strip()
+                        exec(action) 
+                        break
+
+    else:
+        print("No se pudo simular completamente la cadena.")
+
+    return tokens, ''
+
+def AFD_yalex(yalex_contenido, lista_cadenas, show_error_function):
     lineas = yalex_contenido.split('\n')
     expresiones = []
     lista_estados = []
     lista_transiciones_let = []
+    lista_tokens = []
+    lista_unidos = []
     carpeta_guardado = 'AFD_Graphs'
     error_ocurrido = False
     transiciones = None
@@ -481,6 +566,7 @@ def AFD_yalex(yalex_contenido, show_error_function):
                 if len(partes) > 1:
                     exp = partes[1].strip()
                     exp = exp.split('{')[0].strip()
+                    lista_tokens.append(exp)
                     exp = reemplazar_referencias(exp)
 
                 try:
@@ -505,11 +591,22 @@ def AFD_yalex(yalex_contenido, show_error_function):
                     estados, transiciones, estado_aceptacion = construir_transiciones(arbol_sintactico, exp_aumentada)
                     lista_estados.append((estados, transiciones, estado_aceptacion))
 
-                    graficar_afd_directo(estados, transiciones, len(lista_estados) - 1, carpeta_guardado)
+                    #graficar_afd_directo(estados, transiciones, len(lista_estados) - 1, carpeta_guardado)
 
         if not error_ocurrido:
             estados_totales, transiciones_totales, nuevo_estado_inicial = unir_afds(lista_estados)
+            lista_unidos.append((estados_totales, transiciones_totales, estado_aceptacion))
             graficar_afd_unidos(estados_totales, transiciones_totales, nuevo_estado_inicial)
+
+        transiciones_totales = convertir_transiciones(transiciones_totales, revertir_caracteres)
+
+        print(f"\nTransiciones: {transiciones_totales}")
+        print(f"\nTokens: {lista_tokens}") 
+
+        cadenas_entrada = lista_cadenas
+        for cadena_entrada in cadenas_entrada:
+            print(f"\nSimulando cadena: {cadena_entrada}")
+            tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion, lista_tokens, yalex_contenido)
 
     return lista_estados, transiciones, estado_aceptacion
 
