@@ -6,3 +6,9 @@ Implementación de un subconjunto de algoritmos básicos de autómatas finitos (
 
 ## Branch LaboratorioC 
 Iniciar el desarrollo de un generador de analizadores léxicos basado en YALex, el cual, tomando como entrada una especificación (definición regular) de componentes léxicos, generará un analizador léxico que será capaz de reconocer los componentes léxicos especificados.
+
+## Branch LaboratorioD
+Implementación de un generador de analizadores léxicos basado en YALex, el cual, tomando como entrada una especificación (definición regular) de componentes léxicos, generará un analizador léxico que será capaz de reconocer los componentes léxicos especificados, o en su defecto, detectar errores léxicos.
+
+## Branch LaboratorioE
+iniciar el desarrollo de un generador de analizadores sintácticos basado en YAPar, el cual, tomando como entrada una especificación de componentes sintácticos, generará un analizador sintáctico que será capaz de analizar sintácticamente un flujo de tokens proporcionado por un analizador léxico.
