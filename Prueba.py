@@ -7,37 +7,47 @@ class TextEditor:
     def __init__(self, root):
         self.root = root
         self.root.title("YALex Text Editor")
-        self.root.geometry("700x600")
+        self.root.geometry("1000x600")
+        
         self.text_widget = tk.Text(root, wrap="word", undo=True, autoseparators=True)
-        self.text_widget.pack(expand=True, fill="both")
+        self.text_widget.grid(row=0, column=0, sticky="nsew", padx=3, pady=3)
+        self.text_widget.config(width=60, height=25)
 
         self.cadena_text_widget = tk.Text(root, wrap="word", undo=True, autoseparators=True)
-        self.cadena_text_widget.pack(expand=True, fill="both")
+        self.cadena_text_widget.grid(row=1, column=0, sticky="nsew", padx=3, pady=3)
+        self.cadena_text_widget.config(width=60, height=10)
+
+        self.text_widget1 = tk.Text(root, wrap="word", undo=True, autoseparators=True)
+        self.text_widget1.grid(row=0, column=2, sticky="nsew", padx=3, pady=3)
+        self.text_widget1.config(width=60, height=25)
 
         menu_bar = tk.Menu(root)
         root.config(menu=menu_bar)
 
-        menu_bar.add_command(label="Open", command=self.open_file)
-        menu_bar.add_command(label="Save", command=self.save_file)
-        menu_bar.add_command(label="Run YALex", command=self.run_yalex)
+        menu_bar.add_command(label="Open YALex", command=self.open_YALex)
+        menu_bar.add_command(label="Open YAPar", command=self.open_YAPar)
+        menu_bar.add_command(label="Run", command=self.run)
         menu_bar.add_command(label="Exit", command=root.destroy)
 
-    def open_file(self):
+    def open_YALex(self):
         file_path = filedialog.askopenfilename(title="Open YALex File", filetypes=[("YALex Files", "*.yal")])
         if file_path:
             with open(file_path, 'r') as file:
                 content = file.read()
             self.text_widget.delete(1.0, tk.END)
             self.text_widget.insert(tk.END, content)
-
-    def save_file(self):
-        file_path = filedialog.asksaveasfilename(title="Save YALex File", filetypes=[("YALex Files", "*.yal")])
+    
+    def open_YAPar(self):
+        file_path = filedialog.askopenfilename(title="Open YAPar File", filetypes=[("YAPar Files", "*.yalp")])
         if file_path:
-            with open(file_path, 'w') as file:
-                file.write(self.text_widget.get(1.0, tk.END))
+            with open(file_path, 'r') as file:
+                content = file.read()
+            self.text_widget1.delete(1.0, tk.END)
+            self.text_widget1.insert(tk.END, content)
 
-    def run_yalex(self):
+    def run(self):
         yalex_contenido = self.text_widget.get(1.0, tk.END)
+        yapar_contenido = self.text_widget1.get(1.0, tk.END)
         carpeta_guardado = 'AFD_Graphs'
         for archivo in os.listdir(carpeta_guardado):
             archivo_path = os.path.join(carpeta_guardado, archivo)
@@ -50,7 +60,7 @@ class TextEditor:
         cadena_input = self.get_cadena_input()
         lista_cadenas = self.convertir_a_lista(cadena_input)
 
-        estados, transiciones, estado_aceptacion = AFD_yalex(yalex_contenido, lista_cadenas, self.show_error)
+        estados, transiciones, estado_aceptacion = AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, self.show_error)
 
     def get_cadena_input(self):
         cadena_input = self.cadena_text_widget.get(1.0, tk.END)
@@ -479,7 +489,7 @@ def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_token
 
     return tokens, ''
 
-def AFD_yalex(yalex_contenido, lista_cadenas, show_error_function):
+def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_function):
     lineas = yalex_contenido.split('\n')
     expresiones = []
     lista_estados = []
