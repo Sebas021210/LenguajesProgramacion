@@ -48,6 +48,7 @@ class TextEditor:
     def run(self):
         yalex_contenido = self.text_widget.get(1.0, tk.END)
         yapar_contenido = self.text_widget1.get(1.0, tk.END)
+        self.verificar_tokens()
         carpeta_guardado = 'AFD_Graphs'
         for archivo in os.listdir(carpeta_guardado):
             archivo_path = os.path.join(carpeta_guardado, archivo)
@@ -69,6 +70,47 @@ class TextEditor:
     def convertir_a_lista(self, cadena_input):
         lista_cadenas = cadena_input.split()
         return lista_cadenas
+    
+    def verificar_tokens(self):
+        tokens_yalex = set()
+        tokens_yapar = set()
+
+        en_rule_tokens = False
+        for linea in self.text_widget.get("1.0", tk.END).split('\n'):            
+            if linea.startswith('rule tokens'):
+                en_rule_tokens = True
+                continue
+
+            if en_rule_tokens:
+                if '|' not in linea:
+                    break
+
+                partes = linea.strip().split('|')
+                for parte in partes[1:]:
+                    if '{' in parte:
+                        contenido = parte.split('{')[1].split('}')[0].strip()
+                        if "return" in contenido:
+                            token = contenido.split("return")[1].strip()
+                        elif "print" in contenido:
+                            token = contenido.split("Token:")[1].split('\"')[0].strip()
+                        else:
+                            token = contenido
+                        tokens_yalex.add(token)
+        print(f"Token YALex: {tokens_yalex}")
+
+        for linea in self.text_widget1.get("1.0", tk.END).split('\n'):
+            if linea.strip().startswith("%token"):
+                token = linea.strip().split()[1]
+                tokens_yapar.add(token)
+            if linea.strip().startswith("IGNORE"):
+                token = linea.strip().split()[1]
+                tokens_yapar.remove(token)
+                print(f"Token eliminado: {token}")
+        print(f"Token YAPar: {tokens_yapar}")
+
+        for token in tokens_yapar:
+            if token not in tokens_yalex:
+                tk.messagebox.showwarning("Advertencia", f"El token '{token}' definido en YAPar no está definido en YALex.")
     
     def show_error(self, error_message):
         tk.messagebox.showerror("Error", error_message)
@@ -481,7 +523,11 @@ def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_token
                     exp = exp.split('{')[0].strip()
                     if exp == token_name:
                         action = partes[1].split('{')[1].split('}')[0].strip()
-                        exec(action) 
+                        if action.startswith('return'):
+                            actionValor = action.split(' ')
+                            print(f"Token: {actionValor[1]}")
+                        else:
+                            exec(action) 
                         break
 
     else:
@@ -535,7 +581,7 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
                 break
         return exp
 
-    print("Expresiones: ")
+    print("\nExpresiones: ")
     for i in range(len(expresiones)):
         print(expresiones[i])
 
@@ -610,7 +656,6 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
 
         transiciones_totales = convertir_transiciones(transiciones_totales, revertir_caracteres)
 
-        print(f"\nTransiciones: {transiciones_totales}")
         print(f"\nTokens: {lista_tokens}") 
 
         cadenas_entrada = lista_cadenas
