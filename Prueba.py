@@ -548,6 +548,112 @@ def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_token
 
     return tokens, ''
 
+def gramatica(yapar_contenido):
+    grammar = {}
+    grammar_started = False
+    for line in yapar_contenido:
+        line = line.strip()
+        if line.startswith('%%'):
+            grammar_started = True
+            continue
+        if grammar_started and line:
+            if ':' in line:
+                production, symbols = line.split(':', 1)
+                production = production.strip()
+                symbol_list = [symbol.strip() for symbol in symbols.split('|')]
+                symbol_list = [symbol[:-1] if symbol.endswith(';') else symbol for symbol in symbol_list]
+                grammar[production] = symbol_list
+            else:
+                symbol = line.strip()
+                if symbol.endswith(';'):
+                    symbol = symbol[:-1].strip()
+                grammar[symbol] = []
+
+    print(f'\nGramatica: {grammar}')
+    return grammar
+
+def aumentar_gramatica(grammar):
+    produccion_inicial = list(grammar.keys())[0]
+    nuevo_simbolo = 'S'
+    while nuevo_simbolo in grammar:
+        nuevo_simbolo += '0'
+
+    grammar[nuevo_simbolo] = [produccion_inicial]
+
+    print(f'\nGramatica aumentada: {grammar}')
+    return grammar
+
+def closure(items, grammar):
+    added = True
+    while added:
+        added = False
+        for item in list(items):
+            lhs, rhs = item.split(' -> ')
+            rhs_symbols = rhs.split(' ')
+            if '.' in rhs_symbols:
+                dot_index = rhs_symbols.index('.')
+                if dot_index < len(rhs_symbols) - 1:
+                    next_symbol = rhs_symbols[dot_index + 1]
+                    if next_symbol in grammar:
+                        for production in grammar[next_symbol]:
+                            new_item = next_symbol + ' -> ' + '. ' + production
+                            if new_item not in items:
+                                items.add(new_item)
+                                added = True
+    return items
+
+def goto(items, symbol, grammar):
+    new_items = set()
+
+    for item in items:
+        lhs, rhs = item.split(' -> ')
+        rhs_symbols = rhs.split(' ')
+        if '.' in rhs_symbols:
+            dot_index = rhs_symbols.index('.')
+            if dot_index < len(rhs_symbols) - 1 and rhs_symbols[dot_index + 1] == symbol:
+                new_rhs_symbols = rhs_symbols[:dot_index] + [symbol, '.'] + rhs_symbols[dot_index + 2:]
+                new_item = lhs + ' -> ' + ' '.join(new_rhs_symbols)
+                new_items.add(new_item)
+
+    return closure(new_items, grammar) if new_items else None
+
+def canonical_LR0_collection(grammar, start_symbol):
+    start_item = start_symbol + ' -> . ' + grammar[start_symbol][0]
+    C = [closure(set([start_item]), grammar)]
+    transitions = {}
+    added = True
+
+    while added:
+        added = False
+        for i, items in enumerate(list(C)):
+            for item in items:
+                _, rhs = item.split(' -> ')
+                rhs_symbols = rhs.split(' ')
+                if '.' in rhs_symbols:
+                    dot_index = rhs_symbols.index('.')
+                    if dot_index < len(rhs_symbols) - 1:
+                        symbol = rhs_symbols[dot_index + 1]
+                        new_set = goto(items, symbol, grammar)
+                        if new_set and new_set not in C:
+                            C.append(new_set)
+                            transitions[(i, len(C)-1)] = symbol
+                            added = True
+
+    return C, transitions
+
+def graficar_automata_LR0(collection, transitions):
+    dot = graphviz.Digraph(format='png')
+    for i, item_set in enumerate(collection):
+        label = f'I{i}:\n ' + '\n'.join(item_set)
+        dot.node(f'I{i}', label=label, shape='box')
+
+    for (start, end), symbol in transitions.items():
+        dot.edge(f'I{start}', f'I{end}', label=symbol)
+
+    dot.render('automata_LR0', view=False)
+
+    return dot
+
 def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_function):
     lineas = yalex_contenido.split('\n')
     yapar_contenido = yapar_contenido.split('\n')
@@ -666,27 +772,18 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
             print(f"\nSimulando cadena: {cadena_entrada}")
             tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion, lista_tokens, yalex_contenido)
 
-        grammar = {}
-        grammar_started = False
-        for line in yapar_contenido:
-            line = line.strip()
-            if line.startswith('%%'):
-                grammar_started = True
-                continue
-            if grammar_started and line:
-                if ':' in line:
-                    production, symbols = line.split(':', 1)
-                    production = production.strip()
-                    symbol_list = [symbol.strip() for symbol in symbols.split('|')]
-                    symbol_list = [symbol[:-1] if symbol.endswith(';') else symbol for symbol in symbol_list]
-                    grammar[production] = symbol_list
-                else:
-                    symbol = line.strip()
-                    if symbol.endswith(';'):
-                        symbol = symbol[:-1].strip()
-                    grammar[symbol] = []
+        grammar = gramatica(yapar_contenido)
+        augmented_grammar = aumentar_gramatica(grammar)
+        start_symbol = 'S'
+        canonical_collection, transitions = canonical_LR0_collection(augmented_grammar, start_symbol)
 
-        print(f'\nGramatica: {grammar}')
+        print("\nCanonical LR(0) Collection:")
+        for i, item_set in enumerate(canonical_collection):
+            print(f"\nItem set {i}:")
+            for item in item_set:
+                print(f"{item}")
+
+        graficar_automata_LR0(canonical_collection, transitions)
 
     return lista_estados, transiciones, estado_aceptacion
 
