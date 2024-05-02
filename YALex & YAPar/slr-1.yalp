@@ -8,20 +8,13 @@
 %token PLUS
 %token TIMES
 %token MINUS
+%token LPARENT
+%token RPARENT
 %token WS
 IGNORE WS
 
 %%
 
-expression:
-    expression PLUS term
-  | term
-;
-term:
-    term TIMES factor
-  | factor
-;
-factor:
-    LPAREN expression RPAREN
-  | ID
-;
+expression: expression PLUS term | term;
+term: term TIMES factor | factor;
+factor: LPAREN expression RPAREN | ID;
