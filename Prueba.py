@@ -114,7 +114,6 @@ class TextEditor:
         for token in tokens_yapar:
             if token not in tokens_yalex:
                 tokens_no_definidos.append(token)
-        print(f"Token no definido: {tokens_no_definidos}")
 
         if tokens_no_definidos:
             tk.messagebox.showwarning("Advertencia", f"Los tokens '{tokens_no_definidos}' definidos en YAPar no está definido en YALex.")
@@ -551,6 +550,7 @@ def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_token
 
 def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_function):
     lineas = yalex_contenido.split('\n')
+    yapar_contenido = yapar_contenido.split('\n')
     expresiones = []
     lista_estados = []
     lista_transiciones_let = []
@@ -594,12 +594,6 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
             if exp == exp_previa:
                 break
         return exp
-
-    '''
-    print("\nExpresiones: ")
-    for i in range(len(expresiones)):
-        print(expresiones[i])
-    '''
 
     for _, exp in expresiones:
         try:
@@ -649,21 +643,16 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
                     break
 
                 if not error_ocurrido:
-                    print("\nExpresion: ", exp)
+                    print("Expresion: ", exp)
                     infix = convert_optional(exp)
                     infix = expandir_extensiones(infix)
                     infix, alfabeto = convertir_expresion(infix)
                     exp_explicita = concatenacion(infix)
-                    print("Expresion explicita: ", exp_explicita)
                     postfix = infix_postfix(exp_explicita)
-                    print("Expresion postfix: ", postfix)
                     exp_aumentada = aumentar_expresion(postfix)
-                    print("Expresion aumentada: ", exp_aumentada)
                     arbol_sintactico = construir_AS(exp_aumentada)
                     estados, transiciones, estado_aceptacion = construir_transiciones(arbol_sintactico, exp_aumentada)
                     lista_estados.append((estados, transiciones, estado_aceptacion))
-
-                    #graficar_afd_directo(estados, transiciones, len(lista_estados) - 1, carpeta_guardado)
 
         if not error_ocurrido:
             estados_totales, transiciones_totales, nuevo_estado_inicial = unir_afds(lista_estados)
@@ -672,12 +661,32 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
 
         transiciones_totales = convertir_transiciones(transiciones_totales, revertir_caracteres)
 
-        #print(f"\nTokens: {lista_tokens}") 
-
         cadenas_entrada = lista_cadenas
         for cadena_entrada in cadenas_entrada:
             print(f"\nSimulando cadena: {cadena_entrada}")
             tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion, lista_tokens, yalex_contenido)
+
+        grammar = {}
+        grammar_started = False
+        for line in yapar_contenido:
+            line = line.strip()
+            if line.startswith('%%'):
+                grammar_started = True
+                continue
+            if grammar_started and line:
+                if ':' in line:
+                    production, symbols = line.split(':', 1)
+                    production = production.strip()
+                    symbol_list = [symbol.strip() for symbol in symbols.split('|')]
+                    symbol_list = [symbol[:-1] if symbol.endswith(';') else symbol for symbol in symbol_list]
+                    grammar[production] = symbol_list
+                else:
+                    symbol = line.strip()
+                    if symbol.endswith(';'):
+                        symbol = symbol[:-1].strip()
+                    grammar[symbol] = []
+
+        print(f'\nGramatica: {grammar}')
 
     return lista_estados, transiciones, estado_aceptacion
 
