@@ -1,59 +1,69 @@
 digraph {
 	I0 [label="I0:
- expression -> . term
+term -> . factor
+factor -> . ID
+term -> . term TIMES factor
+expression -> . term
+expression -> . expression PLUS term
 S -> . expression
-factor -> . ID
-term -> . term TIMES factor
-term -> . factor
-factor -> . LPAREN expression RPAREN
-expression -> . expression PLUS term" shape=box]
+factor -> . LPAREN expression RPAREN" shape=box]
 	I1 [label="I1:
- expression -> term .
-term -> term . TIMES factor" shape=box]
+term -> factor ." shape=box]
 	I2 [label="I2:
- expression -> expression . PLUS term
-S -> expression ." shape=box]
+factor -> ID ." shape=box]
 	I3 [label="I3:
- factor -> ID ." shape=box]
+term -> term . TIMES factor
+expression -> term ." shape=box]
 	I4 [label="I4:
- term -> factor ." shape=box]
+expression -> expression . PLUS term
+S -> expression ." shape=box]
 	I5 [label="I5:
- expression -> . term
+term -> . factor
+factor -> . ID
+term -> . term TIMES factor
+expression -> . term
+expression -> . expression PLUS term
 factor -> LPAREN . expression RPAREN
-factor -> . ID
-term -> . term TIMES factor
-term -> . factor
-factor -> . LPAREN expression RPAREN
-expression -> . expression PLUS term" shape=box]
+factor -> . LPAREN expression RPAREN" shape=box]
 	I6 [label="I6:
- factor -> . LPAREN expression RPAREN
 factor -> . ID
-term -> term TIMES . factor" shape=box]
+term -> term TIMES . factor
+factor -> . LPAREN expression RPAREN" shape=box]
 	I7 [label="I7:
- factor -> . ID
-expression -> expression PLUS . term
-term -> . term TIMES factor
 term -> . factor
+factor -> . ID
+term -> . term TIMES factor
+expression -> expression PLUS . term
 factor -> . LPAREN expression RPAREN" shape=box]
 	I8 [label="I8:
- expression -> expression . PLUS term
+expression -> expression . PLUS term
 factor -> LPAREN expression . RPAREN" shape=box]
 	I9 [label="I9:
- term -> term TIMES factor ." shape=box]
+term -> term TIMES factor ." shape=box]
 	I10 [label="I10:
- term -> term . TIMES factor
-expression -> expression PLUS term ." shape=box]
+term -> factor ." shape=box]
 	I11 [label="I11:
- factor -> LPAREN expression RPAREN ." shape=box]
-	I0 -> I1 [label=term]
-	I0 -> I2 [label=expression]
-	I0 -> I3 [label=ID]
-	I0 -> I4 [label=factor]
+term -> factor ." shape=box]
+	I0 -> I1 [label=factor]
+	I0 -> I2 [label=ID]
+	I0 -> I3 [label=term]
+	I0 -> I4 [label=expression]
 	I0 -> I5 [label=LPAREN]
-	I1 -> I6 [label=TIMES]
-	I2 -> I7 [label=PLUS]
+	I3 -> I6 [label=TIMES]
+	I4 -> I7 [label=PLUS]
+	I5 -> I1 [label=factor]
+	I5 -> I2 [label=ID]
+	I5 -> I3 [label=term]
 	I5 -> I8 [label=expression]
+	I5 -> I5 [label=LPAREN]
+	I6 -> I2 [label=ID]
 	I6 -> I9 [label=factor]
+	I6 -> I5 [label=LPAREN]
+	I7 -> I1 [label=factor]
+	I7 -> I2 [label=ID]
 	I7 -> I10 [label=term]
+	I7 -> I5 [label=LPAREN]
+	I8 -> I7 [label=PLUS]
 	I8 -> I11 [label=RPAREN]
+	I10 -> I6 [label=TIMES]
 }

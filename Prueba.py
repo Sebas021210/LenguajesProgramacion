@@ -560,8 +560,8 @@ def gramatica(yapar_contenido):
             if ':' in line:
                 production, symbols = line.split(':', 1)
                 production = production.strip()
-                symbol_list = [symbol.strip() for symbol in symbols.split('|')]
-                symbol_list = [symbol[:-1] if symbol.endswith(';') else symbol for symbol in symbol_list]
+                symbol_list = [symbol.strip().split() for symbol in symbols.split('|')]
+                symbol_list = [[symbol[:-1] if symbol.endswith(';') else symbol for symbol in production] for production in symbol_list]
                 grammar[production] = symbol_list
             else:
                 symbol = line.strip()
@@ -595,11 +595,14 @@ def closure(items, grammar):
                 if dot_index < len(rhs_symbols) - 1:
                     next_symbol = rhs_symbols[dot_index + 1]
                     if next_symbol in grammar:
+                        new_items = []
                         for production in grammar[next_symbol]:
-                            new_item = next_symbol + ' -> ' + '. ' + production
+                            production_str = ' '.join(production)
+                            new_item = next_symbol + ' -> . ' + production_str
                             if new_item not in items:
-                                items.add(new_item)
+                                new_items.append(new_item)
                                 added = True
+                        items.update(new_items)
     return items
 
 def goto(items, symbol, grammar):
@@ -627,28 +630,43 @@ def canonical_LR0_collection(grammar, start_symbol):
         added = False
         for i, items in enumerate(list(C)):
             for item in items:
-                _, rhs = item.split(' -> ')
+                lhs, rhs = item.split(' -> ')
                 rhs_symbols = rhs.split(' ')
                 if '.' in rhs_symbols:
                     dot_index = rhs_symbols.index('.')
                     if dot_index < len(rhs_symbols) - 1:
                         symbol = rhs_symbols[dot_index + 1]
                         new_set = goto(items, symbol, grammar)
-                        if new_set and new_set not in C:
-                            C.append(new_set)
-                            transitions[(i, len(C)-1)] = symbol
-                            added = True
+                        if new_set:
+                            new_set_index = len(C)
+                            for j, existing_set in enumerate(C):
+                                if new_set == existing_set:
+                                    new_set_index = j
+                                    break
+                            if new_set_index not in transitions.get(i, []):
+                                if i not in transitions:
+                                    transitions[i] = {}
+                                transitions[i].setdefault(new_set_index, []).append(symbol)
+                                added = True
+                                if new_set not in C:
+                                    C.append(new_set)
 
     return C, transitions
 
 def graficar_automata_LR0(collection, transitions):
     dot = graphviz.Digraph(format='png')
-    for i, item_set in enumerate(collection):
-        label = f'I{i}:\n ' + '\n'.join(item_set)
-        dot.node(f'I{i}', label=label, shape='box')
 
-    for (start, end), symbol in transitions.items():
-        dot.edge(f'I{start}', f'I{end}', label=symbol)
+    state_names = {f'I{i}': f'I{i}' for i in range(len(collection))}
+    for state, item_set in state_names.items():
+        label = f'{item_set}:\n' + '\n'.join(collection[int(state[1])])
+        dot.node(state, label=label, shape='box')
+
+    for start, end_transitions in transitions.items():
+        start_state = state_names[f'I{start}']
+        for end, symbols in end_transitions.items():
+            end_state = state_names[f'I{end}']
+            for symbol in symbols:
+                dot.edge(start_state, end_state, label=symbol)
 
     dot.render('automata_LR0', view=False)
 
