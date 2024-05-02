@@ -48,7 +48,10 @@ class TextEditor:
     def run(self):
         yalex_contenido = self.text_widget.get(1.0, tk.END)
         yapar_contenido = self.text_widget1.get(1.0, tk.END)
-        self.verificar_tokens()
+
+        if not self.verificar_tokens():
+            return
+        
         carpeta_guardado = 'AFD_Graphs'
         for archivo in os.listdir(carpeta_guardado):
             archivo_path = os.path.join(carpeta_guardado, archivo)
@@ -74,6 +77,7 @@ class TextEditor:
     def verificar_tokens(self):
         tokens_yalex = set()
         tokens_yapar = set()
+        tokens_no_definidos = []
 
         en_rule_tokens = False
         for linea in self.text_widget.get("1.0", tk.END).split('\n'):            
@@ -105,12 +109,18 @@ class TextEditor:
             if linea.strip().startswith("IGNORE"):
                 token = linea.strip().split()[1]
                 tokens_yapar.remove(token)
-                print(f"Token eliminado: {token}")
         print(f"Token YAPar: {tokens_yapar}")
 
         for token in tokens_yapar:
             if token not in tokens_yalex:
-                tk.messagebox.showwarning("Advertencia", f"El token '{token}' definido en YAPar no está definido en YALex.")
+                tokens_no_definidos.append(token)
+        print(f"Token no definido: {tokens_no_definidos}")
+
+        if tokens_no_definidos:
+            tk.messagebox.showwarning("Advertencia", f"Los tokens '{tokens_no_definidos}' definidos en YAPar no está definido en YALex.")
+            return False
+
+        return True
     
     def show_error(self, error_message):
         tk.messagebox.showerror("Error", error_message)
@@ -155,13 +165,17 @@ def reemplazar_caracteres(expresion):
         expresion = expresion.replace("(>)", "鸡")
     elif expresion.find("(=)") != -1:
         expresion = expresion.replace("(=)", "卡")
+    elif expresion.find("(LPARENT)") != -1:
+        expresion = expresion.replace("(LPARENT)", "丝")
+    elif expresion.find("(RPARENT)") != -1:
+        expresion = expresion.replace("(RPARENT)", "瓜")
 
     for caracter, chino in caracteres_reemplazar.items():
         expresion = expresion.replace(caracter, chino)
     return expresion
 
 def revertir_caracteres(expresion):
-    caracteres_revertir = {'替': 't', '换': 'n', '空': 's', '加': '+', '点': '-', '苦': '_', '阿': '*', '贝': '/', '色': ';', '日': ':=', '伊': '<', '鸡': '>', '卡': '='}
+    caracteres_revertir = {'替': 't', '换': 'n', '空': 's', '加': '+', '点': '-', '苦': '_', '阿': '*', '贝': '/', '色': ';', '日': ':=', '伊': '<', '鸡': '>', '卡': '=', '丝': '(', '瓜': ')'}
     for chino, caracter in caracteres_revertir.items():
         expresion = expresion.replace(chino, caracter)
     return expresion
@@ -581,9 +595,11 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
                 break
         return exp
 
+    '''
     print("\nExpresiones: ")
     for i in range(len(expresiones)):
         print(expresiones[i])
+    '''
 
     for _, exp in expresiones:
         try:
@@ -656,7 +672,7 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
 
         transiciones_totales = convertir_transiciones(transiciones_totales, revertir_caracteres)
 
-        print(f"\nTokens: {lista_tokens}") 
+        #print(f"\nTokens: {lista_tokens}") 
 
         cadenas_entrada = lista_cadenas
         for cadena_entrada in cadenas_entrada:
