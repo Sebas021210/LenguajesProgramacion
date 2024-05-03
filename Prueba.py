@@ -672,6 +672,37 @@ def graficar_automata_LR0(collection, transitions):
 
     return dot
 
+def primero_no_terminal(no_terminal, grammar, primero):
+    if no_terminal in primero:
+        return primero[no_terminal]
+
+    primero_set = set()
+
+    for production in grammar[no_terminal]:
+        for symbol in production:
+            if symbol in grammar:
+                if symbol != no_terminal:
+                    primero_symbol = primero_no_terminal(symbol, grammar, primero)
+                    primero_set.update(primero_symbol)
+                    if 'ε' not in primero_symbol:
+                        break
+            else:
+                primero_set.add(symbol)
+                break
+        else:
+            primero_set.add('ε')
+
+    primero[no_terminal] = primero_set
+    return primero_set
+
+def calcular_primero(grammar):
+    primero = {}
+
+    for no_terminal in grammar:
+        primero_no_terminal(no_terminal, grammar, primero)
+
+    return primero
+
 def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_function):
     lineas = yalex_contenido.split('\n')
     yapar_contenido = yapar_contenido.split('\n')
@@ -802,6 +833,12 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
                 print(f"{item}")
 
         graficar_automata_LR0(canonical_collection, transitions)
+
+        grammarPrimero = gramatica(yapar_contenido)
+        primero = calcular_primero(grammarPrimero)
+        print("\nPrimeros:")
+        for no_terminal, primero_set in primero.items():
+            print(f"primero({no_terminal}): {primero_set}")
 
     return lista_estados, transiciones, estado_aceptacion
 
