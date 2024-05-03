@@ -672,9 +672,14 @@ def graficar_automata_LR0(collection, transitions):
 
     return dot
 
-def primero_no_terminal(no_terminal, grammar, primero):
-    if no_terminal in primero:
+def primero_no_terminal(no_terminal, grammar, primero, procesados=None):
+    if procesados is None:
+        procesados = set()
+
+    if no_terminal in procesados:
         return primero[no_terminal]
+
+    procesados.add(no_terminal)
 
     primero_set = set()
 
@@ -682,9 +687,14 @@ def primero_no_terminal(no_terminal, grammar, primero):
         for symbol in production:
             if symbol in grammar:
                 if symbol != no_terminal:
-                    primero_symbol = primero_no_terminal(symbol, grammar, primero)
-                    primero_set.update(primero_symbol)
+                    primero_symbol = primero_no_terminal(symbol, grammar, primero, procesados)
+                    primero_set.update(primero_symbol - {'ε'})
                     if 'ε' not in primero_symbol:
+                        break
+                else:
+                    if 'ε' in primero[symbol]:
+                        primero_set |= primero[symbol] - {'ε'}
+                    else:
                         break
             else:
                 primero_set.add(symbol)
@@ -692,6 +702,7 @@ def primero_no_terminal(no_terminal, grammar, primero):
         else:
             primero_set.add('ε')
 
+    procesados.remove(no_terminal)
     primero[no_terminal] = primero_set
     return primero_set
 
@@ -699,9 +710,49 @@ def calcular_primero(grammar):
     primero = {}
 
     for no_terminal in grammar:
+        primero[no_terminal] = set()
+
+    for no_terminal in grammar:
         primero_no_terminal(no_terminal, grammar, primero)
 
     return primero
+
+def calcular_siguiente(grammar, start_symbol, primero):
+    follow = {non_terminal: set() for non_terminal in grammar.keys()}
+    follow[start_symbol].add('$')
+
+    while True:
+        updated = False
+        for non_terminal, productions in grammar.items():
+            for production in productions:
+                for i, symbol in enumerate(production):
+                    if symbol in grammar:
+                        if i < len(production) - 1:
+                            siguiente_symbol = set()
+                            for next_symbol in production[i + 1:]:
+                                if next_symbol in grammar:
+                                    if 'ε' not in primero[next_symbol]:
+                                        siguiente_symbol |= primero[next_symbol]
+                                        break
+                                    else:
+                                        siguiente_symbol |= primero[next_symbol] - {'ε'}
+                                else:
+                                    siguiente_symbol.add(next_symbol)
+                            else:
+                                siguiente_symbol |= follow[non_terminal]
+
+                            if not follow[symbol].issuperset(siguiente_symbol):
+                                follow[symbol] |= siguiente_symbol
+                                updated = True
+                        else:
+                            if not follow[symbol].issuperset(follow[non_terminal]):
+                                follow[symbol] |= follow[non_terminal]
+                                updated = True
+
+        if not updated:
+            break
+
+    return follow
 
 def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_function):
     lineas = yalex_contenido.split('\n')
@@ -839,6 +890,11 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
         print("\nPrimeros:")
         for no_terminal, primero_set in primero.items():
             print(f"primero({no_terminal}): {primero_set}")
+        
+        siguiente = calcular_siguiente(grammar, start_symbol, primero)
+        print("\nSiguientes:")
+        for no_terminal, siguiente_set in siguiente.items():
+            print(f"siguiente({no_terminal}): {siguiente_set}")
 
     return lista_estados, transiciones, estado_aceptacion
 
