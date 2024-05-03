@@ -578,7 +578,7 @@ def aumentar_gramatica(grammar):
     while nuevo_simbolo in grammar:
         nuevo_simbolo += '0'
 
-    grammar[nuevo_simbolo] = [produccion_inicial]
+    grammar[nuevo_simbolo] = [[produccion_inicial]]
 
     print(f'\nGramatica aumentada: {grammar}')
     return grammar
@@ -621,7 +621,7 @@ def goto(items, symbol, grammar):
     return closure(new_items, grammar) if new_items else None
 
 def canonical_LR0_collection(grammar, start_symbol):
-    start_item = start_symbol + ' -> . ' + grammar[start_symbol][0]
+    start_item = start_symbol + ' -> . ' + ' '.join(grammar[start_symbol][0])
     C = [closure(set([start_item]), grammar)]
     transitions = {}
     added = True
@@ -886,7 +886,7 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
         graficar_automata_LR0(canonical_collection, transitions)
 
         grammarPrimero = gramatica(yapar_contenido)
-        primero = calcular_primero(grammarPrimero)
+        primero = calcular_primero(grammar)
         print("\nPrimeros:")
         for no_terminal, primero_set in primero.items():
             print(f"primero({no_terminal}): {primero_set}")
