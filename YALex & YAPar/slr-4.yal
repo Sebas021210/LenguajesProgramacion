@@ -10,24 +10,20 @@ let digit = ['0'-'9']
 let digits = digit+
 let id = letter(letter|str|digit)*
 let number = digits(digits)?(E['+' '-']?digits)?
-let condition = ['if' 'else']
-let loop = ['while' 'for']
 
 rule tokens = 
   | ws
-  | condition { print("Token: CONDITION") }
-  | loop      { print("Token: LOOP") }
-  | id        { print("Token: ID") } 
-  | number    { print("Token: NUMBER") }
-  | (;)       { print("Token: SEMICOLON") }
-  | (:=)      { print("Token: ASSIGNOP") }
-  | (<)       { print("Token: LT") }
-  | (=)       { print("Token: EQ") }
-  | (+)       { print("Token: PLUS") }
-  | (-)       { print("Token: MINUS") }
-  | (*)       { print("Token: TIMES") }
-  | (/)       { print("Token: DIV") }
-  | (LPARENT) { print("Token: LPARENT") }
-  | (RPARENT) { print("Token: RPARENT") }
+  | id        { return ID }
+  | number    { return NUMBER }
+  | (;)       { return SEMICOLON }
+  | (:=)      { return ASSIGNOP }
+  | (<)       { return LT }
+  | (=)       { return EQ }
+  | (+)       { return PLUS }
+  | (-)       { return MINUS }
+  | (*)       { return TIMES }
+  | (/)       { return DIV }
+  | (LPAREN)  { return LPAREN }
+  | (RPAREN)  { return RPAREN }
 
 (* Introducir cualquier trailer aqui *)

@@ -18,7 +18,7 @@ rule tokens =
   | (*)       { print("Token: TIMES") }
   | (-)       { print("Token: MINUS") }
   | (/)       { print("Token: DIV") }
-  | (LPARENT) { print("Token: LPARENT") }
-  | (RPARENT) { print("Token: RPARENT") }
+  | (LPAREN)  { print("Token: LPAREN") }
+  | (RPAREN)  { print("Token: RPAREN") }
 
 (* Introducir cualquier trailer aqui *)
