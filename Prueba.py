@@ -21,6 +21,10 @@ class TextEditor:
         self.text_widget1.grid(row=0, column=2, sticky="nsew", padx=3, pady=3)
         self.text_widget1.config(width=60, height=25)
 
+        self.resultado_text_widget = tk.Text(root, wrap="word", undo=True, autoseparators=True)
+        self.resultado_text_widget.grid(row=1, column=2, sticky="nsew", padx=3, pady=3)
+        self.resultado_text_widget.config(width=60, height=10)
+
         menu_bar = tk.Menu(root)
         root.config(menu=menu_bar)
 
@@ -64,7 +68,20 @@ class TextEditor:
         cadena_input = self.get_cadena_input()
         lista_cadenas = self.convertir_a_lista(cadena_input)
 
-        estados, transiciones, estado_aceptacion = AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, self.show_error)
+        resultados = AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, self.show_error)
+        lista_estados, transiciones, estado_aceptacion, primero, siguiente = resultados
+        self.mostrar_resultados_primero_y_siguiente(primero, siguiente)
+
+    def mostrar_resultados_primero_y_siguiente(self, primero, siguiente):
+        self.resultado_text_widget.delete(1.0, tk.END)
+
+        self.resultado_text_widget.insert(tk.END, "Primeros:\n")
+        for no_terminal, primero_set in primero.items():
+            self.resultado_text_widget.insert(tk.END, f"primero({no_terminal}): {primero_set}\n")
+        
+        self.resultado_text_widget.insert(tk.END, "\nSiguientes:\n")
+        for no_terminal, siguiente_set in siguiente.items():
+            self.resultado_text_widget.insert(tk.END, f"siguiente({no_terminal}): {siguiente_set}\n")
 
     def get_cadena_input(self):
         cadena_input = self.cadena_text_widget.get(1.0, tk.END)
@@ -895,7 +912,7 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
         for no_terminal, siguiente_set in siguiente.items():
             print(f"siguiente({no_terminal}): {siguiente_set}")
 
-    return lista_estados, transiciones, estado_aceptacion
+    return lista_estados, transiciones, estado_aceptacion, primero, siguiente
 
 def main():
     root = tk.Tk()
