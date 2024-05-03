@@ -729,15 +729,15 @@ def calcular_siguiente(grammar, start_symbol, primero):
                     if symbol in grammar:
                         if i < len(production) - 1:
                             siguiente_symbol = set()
-                            for next_symbol in production[i + 1:]:
+                            for j in range(i + 1, len(production)):
+                                next_symbol = production[j]
                                 if next_symbol in grammar:
+                                    siguiente_symbol |= primero[next_symbol] - {'ε'}
                                     if 'ε' not in primero[next_symbol]:
-                                        siguiente_symbol |= primero[next_symbol]
                                         break
-                                    else:
-                                        siguiente_symbol |= primero[next_symbol] - {'ε'}
                                 else:
                                     siguiente_symbol.add(next_symbol)
+                                    break
                             else:
                                 siguiente_symbol |= follow[non_terminal]
 
@@ -885,7 +885,6 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
 
         graficar_automata_LR0(canonical_collection, transitions)
 
-        grammarPrimero = gramatica(yapar_contenido)
         primero = calcular_primero(grammar)
         print("\nPrimeros:")
         for no_terminal, primero_set in primero.items():
