@@ -12,3 +12,6 @@ Implementación de un generador de analizadores léxicos basado en YALex, el cua
 
 ## Branch LaboratorioE
 iniciar el desarrollo de un generador de analizadores sintácticos basado en YAPar, el cual, tomando como entrada una especificación de componentes sintácticos, generará un analizador sintáctico que será capaz de analizar sintácticamente un flujo de tokens proporcionado por un analizador léxico.
+
+## Branch LaboratorioF
+Implementación de un generador de analizadores sintácticos basado en YAPar, el cual, tomando como entrada una especificación de componentes sintácticos, generará un analizador sintáctico capaz analizar un flujo de tokens proporcionados por un analizador léxico basado en YALex.
