@@ -642,6 +642,7 @@ def canonical_LR0_collection(grammar, start_symbol):
     C = [closure(set([start_item]), grammar)]
     transitions = {}
     added = True
+    acceptance_state = None
 
     while added:
         added = False
@@ -651,6 +652,8 @@ def canonical_LR0_collection(grammar, start_symbol):
                 rhs_symbols = rhs.split(' ')
                 if '.' in rhs_symbols:
                     dot_index = rhs_symbols.index('.')
+                    if dot_index == len(rhs_symbols) - 1 and lhs != start_symbol:
+                        acceptance_state = i
                     if dot_index < len(rhs_symbols) - 1:
                         symbol = rhs_symbols[dot_index + 1]
                         new_set = goto(items, symbol, grammar)
@@ -668,7 +671,7 @@ def canonical_LR0_collection(grammar, start_symbol):
                                 if new_set not in C:
                                     C.append(new_set)
 
-    return C, transitions
+    return C, transitions, acceptance_state
 
 def graficar_automata_LR0(collection, transitions):
     dot = graphviz.Digraph(format='png')
@@ -770,6 +773,37 @@ def calcular_siguiente(grammar, start_symbol, primero):
             break
 
     return follow
+
+def generar_tabla_SLR(canonical_collection, transitions, acceptance_state, grammar, start_symbol, follow):
+    table = [{} for _ in range(len(canonical_collection))]
+
+    for i, item_set in enumerate(canonical_collection):
+        for item in item_set:
+            lhs, rhs = item.split(' -> ')
+            rhs_symbols = rhs.split(' ')
+            dot_index = rhs_symbols.index('.')
+            if dot_index < len(rhs_symbols) - 1:
+                symbol = rhs_symbols[dot_index + 1]
+                if symbol in grammar:
+                    goto_state = transitions.get(i, {}).get(canonical_collection.index(goto(item_set, symbol, grammar)))
+                    if goto_state is not None:
+                        table[i][symbol] = 'S' + str(goto_state)
+                else:
+                    table[i][symbol] = 'd' + str(transitions[i][canonical_collection.index(goto(item_set, symbol, grammar))][0])
+
+            else:
+                if lhs != start_symbol:
+                    for j, prod in enumerate(grammar[lhs]):
+                        if prod == ['ε']:
+                            for follow_symbol in follow[lhs]:
+                                table[i][follow_symbol] = 'r' + str(j)
+                        else:
+                            for symbol in follow[lhs]:
+                                table[i][symbol] = 'r' + str(j)
+                else:
+                    table[i]['$'] = 'aceptar'
+        
+    return table
 
 def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_function):
     lineas = yalex_contenido.split('\n')
@@ -892,7 +926,7 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
         grammar = gramatica(yapar_contenido)
         augmented_grammar = aumentar_gramatica(grammar)
         start_symbol = 'S'
-        canonical_collection, transitions = canonical_LR0_collection(augmented_grammar, start_symbol)
+        canonical_collection, transitions, acceptance_state = canonical_LR0_collection(augmented_grammar, start_symbol)
 
         print("\nCanonical LR(0) Collection:")
         for i, item_set in enumerate(canonical_collection):
@@ -911,6 +945,14 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
         print("\nSiguientes:")
         for no_terminal, siguiente_set in siguiente.items():
             print(f"siguiente({no_terminal}): {siguiente_set}")
+
+        table = generar_tabla_SLR(canonical_collection, transitions, acceptance_state, augmented_grammar, start_symbol, siguiente)
+
+        print("\nTabla SLR:")
+        for i, row in enumerate(table):
+            print(f"Estado {i}:")
+            for symbol, action in row.items():
+                print(f"  {symbol}: {action}")
 
     return lista_estados, transiciones, estado_aceptacion, primero, siguiente
 
