@@ -586,7 +586,7 @@ def gramatica(yapar_contenido):
                     symbol = symbol[:-1].strip()
                 grammar[symbol] = []
 
-    print(f'\nGramatica: {grammar}')
+    #print(f'\nGramatica: {grammar}')
     return grammar
 
 def aumentar_gramatica(grammar):
@@ -597,7 +597,7 @@ def aumentar_gramatica(grammar):
 
     grammar[nuevo_simbolo] = [[produccion_inicial]]
 
-    print(f'\nGramatica aumentada: {grammar}')
+    #print(f'\nGramatica aumentada: {grammar}')
     return grammar
 
 def closure(items, grammar):
@@ -785,21 +785,23 @@ def generar_tabla_SLR(canonical_collection, transitions, acceptance_state, gramm
             if dot_index < len(rhs_symbols) - 1:
                 symbol = rhs_symbols[dot_index + 1]
                 if symbol in grammar:
-                    goto_state = transitions.get(i, {}).get(canonical_collection.index(goto(item_set, symbol, grammar)))
+                    goto_state = canonical_collection.index(goto(item_set, symbol, grammar))
                     if goto_state is not None:
-                        table[i][symbol] = 'S' + str(goto_state)
+                        table[i][symbol] = f'S{goto_state}'
                 else:
-                    table[i][symbol] = 'd' + str(transitions[i][canonical_collection.index(goto(item_set, symbol, grammar))][0])
+                    goto_state = canonical_collection.index(goto(item_set, symbol, grammar))
+                    if goto_state is not None:
+                        table[i][symbol] = f'd{symbol}({goto_state})'
 
             else:
                 if lhs != start_symbol:
                     for j, prod in enumerate(grammar[lhs]):
                         if prod == ['ε']:
                             for follow_symbol in follow[lhs]:
-                                table[i][follow_symbol] = 'r' + str(j)
+                                table[i][follow_symbol] = f'r{j}'
                         else:
                             for symbol in follow[lhs]:
-                                table[i][symbol] = 'r' + str(j)
+                                table[i][symbol] = f'r{j}'
                 else:
                     table[i]['$'] = 'aceptar'
         
