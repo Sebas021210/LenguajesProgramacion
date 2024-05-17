@@ -777,6 +777,13 @@ def calcular_siguiente(grammar, start_symbol, primero):
 def generar_tabla_SLR(canonical_collection, transitions, acceptance_state, grammar, start_symbol, follow):
     table = [{} for _ in range(len(canonical_collection))]
 
+    production_indices = {}
+    production_index = 1
+    for lhs, productions in grammar.items():
+        for production in productions:
+            production_indices[(lhs, tuple(production))] = production_index
+            production_index += 1
+
     for i, item_set in enumerate(canonical_collection):
         for item in item_set:
             lhs, rhs = item.split(' -> ')
@@ -795,16 +802,14 @@ def generar_tabla_SLR(canonical_collection, transitions, acceptance_state, gramm
 
             else:
                 if lhs != start_symbol:
-                    for j, prod in enumerate(grammar[lhs]):
-                        if prod == ['ε']:
-                            for follow_symbol in follow[lhs]:
-                                table[i][follow_symbol] = f'r{j}'
-                        else:
-                            for symbol in follow[lhs]:
-                                table[i][symbol] = f'r{j}'
+                    production = (lhs, tuple(rhs_symbols[:-1]))
+                    if production in production_indices:
+                        prod_index = production_indices[production]
+                        for symbol in follow[lhs]:
+                            table[i][symbol] = f'r{prod_index}'
                 else:
                     table[i]['$'] = 'aceptar'
-        
+
     return table
 
 def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_function):
