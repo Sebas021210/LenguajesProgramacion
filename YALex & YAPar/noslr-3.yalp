@@ -1,0 +1,29 @@
+/* Configuración del parser para Gramática No.3 */
+
+%token IF
+%token ELSE
+%token LOOP
+%token ID
+%token NUMBER
+%token SEMICOLON
+%token ASSIGNOP
+%token LT
+%token EQ
+%token PLUS
+%token MINUS
+%token TIMES
+%token DIV
+%token LPARENT
+%token RPARENT
+
+%%
+
+program: statements;
+statements: statement SEMICOLON statements | statement SEMICOLON;
+statement: assignment | condition | loop;
+assignment: ID ASSIGNOP expression;
+condition: IF LPARENT expression RPARENT statement ELSE statement;
+loop: LOOP LPARENT expression RPARENT statement;
+expression: expression PLUS term | expression MINUS term | expression PLUS expression | term;
+term: term TIMES factor | term DIV factor | factor;
+factor: NUMBER | ID | LPARENT expression RPARENT;
