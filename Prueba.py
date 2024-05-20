@@ -774,6 +774,13 @@ def calcular_siguiente(grammar, start_symbol, primero):
 
     return follow
 
+def verificar_gramatica_SLR(tabla_SLR):
+    for estado in tabla_SLR:
+        acciones = estado.values()
+        if len(acciones) != len(set(acciones)):
+            return False
+    return True
+
 def generar_tabla_SLR(canonical_collection, transitions, acceptance_state, grammar, start_symbol, follow):
     table = [{} for _ in range(len(canonical_collection))]
 
@@ -791,26 +798,26 @@ def generar_tabla_SLR(canonical_collection, transitions, acceptance_state, gramm
             dot_index = rhs_symbols.index('.')
             if dot_index < len(rhs_symbols) - 1:
                 symbol = rhs_symbols[dot_index + 1]
-                if symbol in grammar:
-                    goto_state = canonical_collection.index(goto(item_set, symbol, grammar))
-                    if goto_state is not None:
-                        table[i][symbol] = f'S{goto_state}'
-                else:
-                    goto_state = canonical_collection.index(goto(item_set, symbol, grammar))
-                    if goto_state is not None:
-                        table[i][symbol] = f'd{symbol}({goto_state})'
-
+                goto_state = goto(item_set, symbol, grammar)
+                if goto_state:
+                    goto_state_index = canonical_collection.index(goto_state)
+                    if symbol in grammar:
+                        table[i][symbol] = f'S{goto_state_index}'
+                    else:
+                        table[i][symbol] = f'S{goto_state_index}'
             else:
                 if lhs != start_symbol:
                     production = (lhs, tuple(rhs_symbols[:-1]))
                     if production in production_indices:
                         prod_index = production_indices[production]
                         for symbol in follow[lhs]:
+                            if symbol in table[i] and table[i][symbol] != f'r{prod_index}':
+                                return table, False 
                             table[i][symbol] = f'r{prod_index}'
                 else:
                     table[i]['$'] = 'aceptar'
 
-    return table
+    return table, True
 
 def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_function):
     lineas = yalex_contenido.split('\n')
@@ -953,13 +960,17 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
         for no_terminal, siguiente_set in siguiente.items():
             print(f"siguiente({no_terminal}): {siguiente_set}")
 
-        table = generar_tabla_SLR(canonical_collection, transitions, acceptance_state, augmented_grammar, start_symbol, siguiente)
+        table, is_SLR = generar_tabla_SLR(canonical_collection, transitions, acceptance_state, augmented_grammar, start_symbol, siguiente)
 
-        print("\nTabla SLR:")
-        for i, row in enumerate(table):
-            print(f"Estado {i}:")
-            for symbol, action in row.items():
-                print(f"  {symbol}: {action}")
+        if not is_SLR:
+            show_error_function("La gramática no es SLR, modifique la gramática para que sea SLR.")
+            return lista_estados, transiciones, estado_aceptacion, primero, siguiente
+        else:
+            print("\nTabla SLR:")
+            for i, row in enumerate(table):
+                print(f"Estado {i}:")
+                for symbol, action in row.items():
+                    print(f"  {symbol}: {action}")
 
     return lista_estados, transiciones, estado_aceptacion, primero, siguiente
 
