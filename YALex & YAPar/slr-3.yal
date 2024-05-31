@@ -16,20 +16,20 @@ let loop = ['while' 'for']
 
 rule tokens = 
   | ws
-  | if_condition   { print("Token: IF") }
-  | else_condition { print("Token: ELSE") }
-  | loop           { print("Token: LOOP") }
-  | id             { print("Token: ID") } 
-  | number         { print("Token: NUMBER") }
-  | (;)            { print("Token: SEMICOLON") }
-  | (:=)           { print("Token: ASSIGNOP") }
-  | (<)            { print("Token: LT") }
-  | (=)            { print("Token: EQ") }
-  | (+)            { print("Token: PLUS") }
-  | (-)            { print("Token: MINUS") }
-  | (*)            { print("Token: TIMES") }
-  | (/)            { print("Token: DIV") }
-  | (LPARENT)      { print("Token: LPARENT") }
-  | (RPARENT)      { print("Token: RPARENT") }
+  | if_condition   { return IF }
+  | else_condition { return ELSE }
+  | loop           { return LOOP }
+  | id             { return ID }
+  | (+)            { return PLUS }
+  | (-)            { return MINUS } 
+  | number         { return NUMBER }
+  | (;)            { return SEMICOLON }
+  | (:=)           { return ASSIGNOP }
+  | (<)            { return LT }
+  | (=)            { return EQ }
+  | (*)            { return TIMES }
+  | (/)            { return DIV }
+  | (LPARENT)      { return LPARENT }
+  | (RPARENT)      { return RPARENT }
 
 (* Introducir cualquier trailer aqui *)

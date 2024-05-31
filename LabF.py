@@ -569,7 +569,7 @@ def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_token
     else:
         print("No se pudo simular completamente la cadena.")
 
-    return listTokens, tokens, ''
+    return tokens, ''
 
 def gramatica(yapar_contenido):
     grammar = {}
@@ -1055,7 +1055,7 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
             cadenas_entrada = lista_cadenas
             for cadena_entrada in cadenas_entrada:
                 print(f"\nSimulando cadena: {cadena_entrada}")
-                listTokens, tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion, lista_tokens, yalex_contenido)
+                tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion, lista_tokens, yalex_contenido)
 
             print(f'\ntengo miedo {lista_tokens_validos}')
 

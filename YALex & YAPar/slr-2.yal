@@ -12,13 +12,13 @@ let number = digits(digits)?(E['+' '-']?digits)?
 
 rule tokens = 
   | ws        
-  | id        { print("Token: ID") }
-  | number    { print("Token: NUMBER") }
-  | (+)       { print("Token: PLUS") }
-  | (*)       { print("Token: TIMES") }
-  | (-)       { print("Token: MINUS") }
-  | (/)       { print("Token: DIV") }
-  | (LPAREN)  { print("Token: LPAREN") }
-  | (RPAREN)  { print("Token: RPAREN") }
+  | id        { return ID }
+  | number    { return NUMBER }
+  | (+)       { return PLUS }
+  | (*)       { return TIMES }
+  | (-)       { return MINUS }
+  | (/)       { return DIV }
+  | (LPAREN)  { return LPAREN }
+  | (RPAREN)  { return RPAREN }
 
 (* Introducir cualquier trailer aqui *)

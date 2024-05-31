@@ -10,11 +10,11 @@ let id = letter(letter|digit)*
 
 rule tokens = 
   | ws
-  | id        { print("Token: ID") }
-  | (+)       { print("Token: PLUS") }
-  | (*)       { print("Token: TIMES") }
-  | (-)       { print("Token: MINUS") }
-  | (LPAREN)  { print("Token: LPAREN") }
-  | (RPAREN)  { print("Token: RPAREN") }
+  | id        { return ID }
+  | (+)       { return PLUS }
+  | (*)       { return TIMES }
+  | (-)       { return MINUS }
+  | (LPAREN)  { return LPAREN }
+  | (RPAREN)  { return RPAREN }
 
 (* Introducir cualquier trailer aqui *)
