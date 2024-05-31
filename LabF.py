@@ -589,6 +589,35 @@ def gramatica(yapar_contenido):
     #print(f'\nGramatica: {grammar}')
     return grammar
 
+def countGrammar(yapar_contenido):
+    grammar = {}
+    grammar_started = False
+    production_counter = 1 
+
+    for line in yapar_contenido:
+        line = line.strip()
+        if line.startswith('%%'):
+            grammar_started = True
+            continue
+        if grammar_started and line:
+            if ':' in line:
+                lhs, rhs = line.split(':', 1)
+                lhs = lhs.strip()
+                rhs_list = [rhs_part.strip().split() for rhs_part in rhs.split('|')]
+                for rhs in rhs_list:
+                    if rhs[-1].endswith(';'):
+                        rhs[-1] = rhs[-1][:-1]
+                    grammar[production_counter] = (lhs, rhs)
+                    production_counter += 1
+            else:
+                symbol = line.strip()
+                if symbol.endswith(';'):
+                    symbol = symbol[:-1].strip()
+                grammar[production_counter] = (lhs, [symbol])
+                production_counter += 1
+
+    return grammar
+
 def aumentar_gramatica(grammar):
     produccion_inicial = list(grammar.keys())[0]
     nuevo_simbolo = 'S'
@@ -819,35 +848,6 @@ def generar_tabla_SLR(canonical_collection, transitions, acceptance_state, gramm
 
     return table, True
 
-def countGrammar(yapar_contenido):
-    grammar = {}
-    grammar_started = False
-    production_counter = 1  # Contador para asignar índices a las producciones
-
-    for line in yapar_contenido:
-        line = line.strip()
-        if line.startswith('%%'):
-            grammar_started = True
-            continue
-        if grammar_started and line:
-            if ':' in line:
-                lhs, rhs = line.split(':', 1)
-                lhs = lhs.strip()
-                rhs_list = [rhs_part.strip().split() for rhs_part in rhs.split('|')]
-                for rhs in rhs_list:
-                    if rhs[-1].endswith(';'):
-                        rhs[-1] = rhs[-1][:-1]
-                    grammar[production_counter] = (lhs, rhs)
-                    production_counter += 1
-            else:
-                symbol = line.strip()
-                if symbol.endswith(';'):
-                    symbol = symbol[:-1].strip()
-                grammar[production_counter] = (lhs, [symbol])
-                production_counter += 1
-
-    return grammar
-
 def simular_sintactico(cadena_tokens, tabla_SLR, grammar):
     pila = [0] 
     cadena_tokens.append('$') 
@@ -1052,11 +1052,11 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
                 tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion, lista_tokens, yalex_contenido)
 
             countgrammar = countGrammar(yapar_contenido)
-            print(f"\nSimulando cadena de tokens: {cadenas_entrada}")
-            print(grammar)
-            aceptado, error = simular_sintactico(cadenas_entrada, table, countgrammar)
-            if aceptado == False:
-                show_error_function(error)
+            if cadenas_entrada:
+                print(f"\nSimulando cadena de tokens: {cadenas_entrada}")
+                aceptado, error = simular_sintactico(cadenas_entrada, table, countgrammar)
+                if aceptado == False:
+                    show_error_function(error)
 
     return lista_estados, transiciones, estado_aceptacion, primero, siguiente
 
