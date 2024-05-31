@@ -503,8 +503,11 @@ def validar_sintaxis(expresion):
     if single_quote_open:
         raise SintaxisError(f"Error: Comilla simple sin coincidencia de cierre en la expresión.", expresion)
 
+lista_tokens_validos = []
+
 def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_tokens, yalex_contenido):
     tokens = []
+    listTokens = []
     estados_invertidos = {item: index for index, item in enumerate(estados)}
     estado_inicial_actual_index = 0
     automata_index = None
@@ -554,8 +557,11 @@ def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_token
                     if exp == token_name:
                         action = partes[1].split('{')[1].split('}')[0].strip()
                         if action.startswith('return'):
-                            actionValor = action.split(' ')
-                            print(f"Token: {actionValor[1]}")
+                            actionValor = action.split(' ')[1]
+                            print(f"Token: {actionValor}")
+                            listTokens.append(actionValor)
+                            if actionValor != '$':
+                                lista_tokens_validos.append(actionValor)
                         else:
                             exec(action) 
                         break
@@ -563,7 +569,7 @@ def simular_cadena(cadena, estados, transiciones, estado_aceptacion, lista_token
     else:
         print("No se pudo simular completamente la cadena.")
 
-    return tokens, ''
+    return listTokens, tokens, ''
 
 def gramatica(yapar_contenido):
     grammar = {}
@@ -1049,12 +1055,15 @@ def AFD_yalex(yalex_contenido, yapar_contenido, lista_cadenas, show_error_functi
             cadenas_entrada = lista_cadenas
             for cadena_entrada in cadenas_entrada:
                 print(f"\nSimulando cadena: {cadena_entrada}")
-                tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion, lista_tokens, yalex_contenido)
+                listTokens, tokens, resto = simular_cadena(cadena_entrada, estados_totales, transiciones_totales, estado_aceptacion, lista_tokens, yalex_contenido)
+
+            print(f'\ntengo miedo {lista_tokens_validos}')
 
             countgrammar = countGrammar(yapar_contenido)
             if cadenas_entrada:
                 print(f"\nSimulando cadena de tokens: {cadenas_entrada}")
-                aceptado, error = simular_sintactico(cadenas_entrada, table, countgrammar)
+                aceptado, error = simular_sintactico(lista_tokens_validos, table, countgrammar)
+                lista_tokens_validos.clear()
                 if aceptado == False:
                     show_error_function(error)
 
